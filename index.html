@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DFASTER</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Firebase SDK (Compat version for easy single-file usage) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; overflow-x: hidden; }
+        .glass-box { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; }
+        .smooth-trans { transition: all 0.3s ease; }
+        .hide-section { display: none !important; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center">
+
+    <div class="w-full max-w-md h-[100dvh] flex flex-col relative bg-[#1e293b] shadow-2xl sm:border sm:border-slate-800">
+        
+        <!-- Header -->
+        <header class="flex justify-between items-center p-5 bg-[#0f172a] z-10 border-b border-slate-800">
+            <h1 class="text-2xl font-bold tracking-widest text-emerald-400" style="font-family: Arial, sans-serif;">DFASTER</h1>
+            <button onclick="changeView('settingsView')" class="text-slate-400 hover:text-emerald-400 smooth-trans">
+                <i class="fas fa-cog text-xl"></i>
+            </button>
+        </header>
+
+        <!-- Main Content -->
+        <main class="flex-1 overflow-y-auto p-5 relative">
+            
+            <!-- HOME VIEW -->
+            <div id="homeView" class="app-section flex flex-col h-full justify-center pb-10">
+                <div class="text-center mb-8">
+                    <i class="fas fa-bolt text-5xl text-emerald-500 mb-4"></i>
+                    <h2 class="text-xl font-semibold mb-2 text-slate-200">Get Any Video or Audio</h2>
+                    <p class="text-sm text-slate-400">Paste a link or share directly to start</p>
+                </div>
+
+                <div class="glass-box p-2 flex items-center mb-6">
+                    <input type="text" id="videoLink" placeholder="Paste your link here" class="w-full bg-transparent text-white px-4 py-3 outline-none placeholder-slate-500 text-sm">
+                    <button onclick="pasteLink()" class="p-3 text-slate-400 hover:text-emerald-400 smooth-trans">
+                        <i class="fas fa-paste"></i>
+                    </button>
+                </div>
+
+                <button onclick="findDownloadOptions()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-4 rounded-xl smooth-trans shadow-lg flex justify-center items-center">
+                    <span id="buttonText">Find Options</span>
+                    <i id="buttonIcon" class="fas fa-search ml-2"></i>
+                    <i id="loadingSpinner" class="fas fa-circle-notch fa-spin ml-2 hidden"></i>
+                </button>
+            </div>
+
+            <!-- DOWNLOAD OPTIONS VIEW -->
+            <div id="downloadView" class="app-section hide-section pb-20">
+                <button onclick="changeView('homeView')" class="text-slate-400 hover:text-white mb-4 text-sm">
+                    <i class="fas fa-arrow-left mr-2"></i> Go Back
+                </button>
+                
+                <div class="glass-box p-4 mb-6">
+                    <div class="w-full h-48 bg-slate-800 rounded-lg mb-4 flex justify-center items-center relative overflow-hidden group">
+                        <img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Thumbnail" class="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 smooth-trans">
+                        <div class="absolute inset-0 bg-black bg-opacity-30"></div>
+                        <i class="fas fa-play-circle text-5xl text-white opacity-80 z-10"></i>
+                    </div>
+                    <h3 class="font-semibold text-slate-200 mb-1 line-clamp-2">Understanding Core Physics & Math Formulas</h3>
+                    <p class="text-xs text-slate-400">Max Available Quality: 720p</p>
+                </div>
+
+                <!-- Video Formats -->
+                <h4 class="text-emerald-400 font-semibold text-sm mb-3"><i class="fas fa-video mr-2"></i> Video Formats</h4>
+                <div class="space-y-2 mb-6">
+                    <div onclick="addToQueue('720p Quality', '65 MB', 'video')" class="glass-box p-4 flex justify-between items-center cursor-pointer hover:bg-slate-700 smooth-trans">
+                        <div><p class="font-semibold text-white">720p Quality</p><p class="text-xs text-slate-400">High Quality MP4</p></div>
+                        <span class="text-sm text-emerald-400 font-semibold">65 MB</span>
+                    </div>
+                    <div onclick="addToQueue('480p Quality', '35 MB', 'video')" class="glass-box p-4 flex justify-between items-center cursor-pointer hover:bg-slate-700 smooth-trans">
+                        <div><p class="font-semibold text-white">480p Quality</p><p class="text-xs text-slate-400">Medium Quality MP4</p></div>
+                        <span class="text-sm text-emerald-400 font-semibold">35 MB</span>
+                    </div>
+                    <div onclick="addToQueue('360p Quality', '20 MB', 'video')" class="glass-box p-4 flex justify-between items-center cursor-pointer hover:bg-slate-700 smooth-trans">
+                        <div><p class="font-semibold text-white">360p Quality</p><p class="text-xs text-slate-400">Low Quality MP4</p></div>
+                        <span class="text-sm text-emerald-400 font-semibold">20 MB</span>
+                    </div>
+                    <div onclick="addToQueue('3GP Format', '12 MB', 'video')" class="glass-box p-4 flex justify-between items-center cursor-pointer hover:bg-slate-700 smooth-trans border-l-2 border-emerald-500">
+                        <div><p class="font-semibold text-white">3GP Format</p><p class="text-xs text-slate-400">Converted Legacy Format</p></div>
+                        <span class="text-sm text-amber-400 font-semibold">12 MB</span>
+                    </div>
+                </div>
+
+                <!-- Audio Formats -->
+                <h4 class="text-emerald-400 font-semibold text-sm mb-3"><i class="fas fa-music mr-2"></i> Audio Formats</h4>
+                <div class="space-y-2">
+                    <div onclick="addToQueue('Highest Quality Audio', '12 MB', 'audio')" class="glass-box p-4 flex justify-between items-center cursor-pointer hover:bg-slate-700 smooth-trans">
+                        <div><p class="font-semibold text-white">Highest Quality</p><p class="text-xs text-slate-400">Original Sound 320kbps</p></div>
+                        <span class="text-sm text-blue-400 font-semibold">12 MB</span>
+                    </div>
+                    <div onclick="addToQueue('Standard Quality Audio', '6 MB', 'audio')" class="glass-box p-4 flex justify-between items-center cursor-pointer hover:bg-slate-700 smooth-trans">
+                        <div><p class="font-semibold text-white">Standard Quality</p><p class="text-xs text-slate-400">Normal Sound 128kbps</p></div>
+                        <span class="text-sm text-blue-400 font-semibold">6 MB</span>
+                    </div>
+                    <div onclick="addToQueue('Lowest Quality Audio', '2 MB', 'audio')" class="glass-box p-4 flex justify-between items-center cursor-pointer hover:bg-slate-700 smooth-trans">
+                        <div><p class="font-semibold text-white">Lowest Quality</p><p class="text-xs text-slate-400">Basic Sound 64kbps</p></div>
+                        <span class="text-sm text-blue-400 font-semibold">2 MB</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DOWNLOADS VIEW -->
+            <div id="historyView" class="app-section hide-section pb-20">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl text-white font-semibold">Your Downloads</h2>
+                    <span class="text-xs bg-slate-800 text-emerald-400 px-2 py-1 rounded"><i class="fas fa-database mr-1"></i> Cloud Synced</span>
+                </div>
+                
+                <div id="downloadsList" class="space-y-3">
+                    <div id="emptyQueueMsg" class="text-center text-slate-500 mt-10 text-sm">
+                        <i class="fas fa-folder-open text-4xl mb-3 opacity-50"></i>
+                        <p>No downloads yet</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ABOUT & SETTINGS VIEWS -->
+            <div id="aboutView" class="app-section hide-section pb-20">
+                <div class="text-center mb-8 mt-4">
+                    <h1 class="text-3xl font-bold tracking-widest text-emerald-400 mb-2" style="font-family: Arial, sans-serif;">DFASTER</h1>
+                    <p class="text-slate-400 text-sm">Fast, Secure & Authentic</p>
+                </div>
+                <div class="glass-box p-6 text-sm text-slate-300 leading-relaxed space-y-4">
+                    <p>Welcome to DFASTER. This is a complete professional tool that allows you to collect any video and audio with zero quality compromise.</p>
+                </div>
+            </div>
+
+            <div id="settingsView" class="app-section hide-section pb-20">
+                <button onclick="changeView('homeView')" class="text-slate-400 hover:text-white mb-6 text-sm"><i class="fas fa-arrow-left mr-2"></i> Go Back</button>
+                <h2 class="text-xl text-white font-semibold mb-6">Settings</h2>
+                <div class="glass-box p-5 space-y-5">
+                    <div>
+                        <h3 class="text-emerald-400 font-semibold text-sm mb-1">Automatic Quality</h3>
+                        <p class="text-xs text-slate-400 mb-4">Set your default format</p>
+                        <select class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg p-3 outline-none text-sm mb-4"><option>Always Ask Me</option></select>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Navigation -->
+        <nav class="absolute bottom-0 w-full bg-[#0f172a] border-t border-slate-800 px-2 py-3 flex justify-between items-center z-20">
+            <button onclick="changeView('homeView')" id="navHome" class="flex-1 flex flex-col items-center text-emerald-400 smooth-trans p-2">
+                <i class="fas fa-home text-xl mb-1"></i><span class="text-[10px] font-semibold">Home</span>
+            </button>
+            <button onclick="changeView('historyView')" id="navHistory" class="flex-1 flex flex-col items-center text-slate-500 hover:text-emerald-400 smooth-trans p-2 relative">
+                <i class="fas fa-download text-xl mb-1"></i><span class="text-[10px] font-semibold">Downloads</span>
+                <span id="queueBadge" class="absolute top-1 right-8 bg-emerald-500 text-white text-[9px] rounded-full w-4 h-4 flex items-center justify-center hidden">0</span>
+            </button>
+            <button onclick="changeView('aboutView')" id="navAbout" class="flex-1 flex flex-col items-center text-slate-500 hover:text-emerald-400 smooth-trans p-2">
+                <i class="fas fa-info-circle text-xl mb-1"></i><span class="text-[10px] font-semibold">About</span>
+            </button>
+        </nav>
+
+        <!-- Popup -->
+        <div id="popupAlert" class="absolute top-10 left-1/2 transform -translate-x-1/2 bg-emerald-600 text-white px-6 py-3 rounded-full shadow-lg hide-section z-50 text-sm font-semibold flex items-center">
+            <i class="fas fa-info-circle mr-2"></i> <span id="popupText">Action completed</span>
+        </div>
+    </div>
+
+    <script>
+        // --- FIREBASE CONFIGURATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyBYHZmu9IoAP42HEuLjRZdtLZN9TdEwLmY",
+            authDomain: "dfaster.firebaseapp.com",
+            projectId: "dfaster",
+            storageBucket: "dfaster.firebasestorage.app",
+            messagingSenderId: "665888111641",
+            appId: "1:665888111641:web:8b2e64fdb5b790a77bfe88"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Unique User ID (So each user sees their own history)
+        let userId = localStorage.getItem('dfaster_user_id');
+        if(!userId) {
+            userId = 'usr_' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('dfaster_user_id', userId);
+        }
+
+        // --- APP LOGIC ---
+        let activeDownloads = 0;
+        const MAX_CONCURRENT = 3;
+        let queueCount = 0;
+
+        function changeView(viewId) {
+            document.querySelectorAll('.app-section').forEach(el => el.classList.add('hide-section'));
+            document.getElementById(viewId).classList.remove('hide-section');
+            const navIds = ['navHome', 'navHistory', 'navAbout'];
+            navIds.forEach(id => {
+                if(document.getElementById(id)) document.getElementById(id).classList.replace('text-emerald-400', 'text-slate-500');
+            });
+            if(viewId === 'homeView') document.getElementById('navHome').classList.replace('text-slate-500', 'text-emerald-400');
+            if(viewId === 'historyView') document.getElementById('navHistory').classList.replace('text-slate-500', 'text-emerald-400');
+            if(viewId === 'aboutView') document.getElementById('navAbout').classList.replace('text-slate-500', 'text-emerald-400');
+        }
+
+        async function pasteLink() {
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById('videoLink').value = text;
+            } catch (err) {
+                showPopup('Please paste manually');
+            }
+        }
+
+        function findDownloadOptions() {
+            const link = document.getElementById('videoLink').value;
+            if(!link) return showPopup('Please enter a link');
+            document.getElementById('buttonText').innerText = 'Processing...';
+            document.getElementById('buttonIcon').classList.add('hidden');
+            document.getElementById('loadingSpinner').classList.remove('hidden');
+
+            setTimeout(() => {
+                document.getElementById('buttonText').innerText = 'Find Options';
+                document.getElementById('buttonIcon').classList.remove('hidden');
+                document.getElementById('loadingSpinner').classList.add('hidden');
+                changeView('downloadView');
+            }, 1200);
+        }
+
+        function addToQueue(format, size, type) {
+            const downloadsList = document.getElementById('downloadsList');
+            if(document.getElementById('emptyQueueMsg')) document.getElementById('emptyQueueMsg').style.display = 'none';
+
+            queueCount++;
+            updateBadge();
+            const isWaiting = activeDownloads >= MAX_CONCURRENT;
+            if(!isWaiting) activeDownloads++;
+
+            const itemId = 'item-' + Date.now();
+            const statusText = isWaiting ? 'Waiting...' : 'Downloading...';
+            
+            const itemHTML = `
+                <div id="${itemId}" class="glass-box p-4 flex flex-col justify-center relative overflow-hidden">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center z-10">
+                            <div class="w-10 h-10 bg-slate-800 rounded flex justify-center items-center mr-3">
+                                <i class="${type === 'audio' ? 'fas fa-music' : 'fas fa-video'} text-slate-300"></i>
+                            </div>
+                            <div>
+                                <p class="font-semibold text-white text-sm">${format}</p>
+                                <p class="text-xs text-slate-400">${size}</p>
+                            </div>
+                        </div>
+                        <div class="text-right z-10">
+                            <p class="text-[10px] ${isWaiting ? 'text-amber-400' : 'text-emerald-400'} status-text font-semibold flex items-center">
+                                <i class="fas ${isWaiting ? 'fa-clock' : 'fa-circle-notch fa-spin'} mr-1 status-icon"></i> <span class="status-label">${statusText}</span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="w-full bg-slate-800 h-1 rounded-full overflow-hidden z-10 ${isWaiting ? 'hidden' : ''} progress-container">
+                        <div class="bg-emerald-500 h-1 progress-bar" style="width: 10%; transition: width 3s linear;"></div>
+                    </div>
+                </div>
+            `;
+            downloadsList.insertAdjacentHTML('afterbegin', itemHTML);
+            showPopup(isWaiting ? 'Added to Queue' : 'Download Started');
+
+            if(!isWaiting) simulateProgress(itemId, format, size);
+        }
+
+        function simulateProgress(itemId, format, size) {
+            setTimeout(() => {
+                const item = document.getElementById(itemId);
+                if(item) {
+                    item.querySelector('.progress-bar').style.width = '100%';
+                    setTimeout(() => {
+                        item.querySelector('.status-icon').className = 'fas fa-check-circle mr-1';
+                        item.querySelector('.status-label').innerText = 'Completed';
+                        item.querySelector('.status-text').className = 'text-[10px] text-emerald-500 status-text font-semibold flex items-center';
+                        item.querySelector('.progress-container').classList.add('hidden');
+                        
+                        activeDownloads--;
+                        queueCount--;
+                        updateBadge();
+
+                        // --- SAVE TO FIREBASE DATABASE ---
+                        db.collection("users").doc(userId).collection("history").add({
+                            format: format,
+                            size: size,
+                            date: new Date().toLocaleString()
+                        }).then(() => console.log("Saved to Cloud!")).catch(e => console.error(e));
+
+                        processNextInQueue();
+                    }, 3000);
+                }
+            }, 100);
+        }
+
+        function processNextInQueue() {
+            if(activeDownloads >= MAX_CONCURRENT) return;
+            const items = document.querySelectorAll('.status-label');
+            for(let i = items.length - 1; i >= 0; i--) {
+                if(items[i].innerText === 'Waiting...') {
+                    activeDownloads++;
+                    items[i].innerText = 'Downloading...';
+                    items[i].parentElement.className = 'text-[10px] text-emerald-400 status-text font-semibold flex items-center';
+                    items[i].previousElementSibling.className = 'fas fa-circle-notch fa-spin mr-1 status-icon';
+                    const parentBox = items[i].closest('.glass-box');
+                    parentBox.querySelector('.progress-container').classList.remove('hidden');
+                    
+                    // Extract format and size to pass to simulator
+                    const format = parentBox.querySelector('.text-white.text-sm').innerText;
+                    const size = parentBox.querySelector('.text-slate-400').innerText;
+                    simulateProgress(parentBox.id, format, size);
+                    break;
+                }
+            }
+        }
+
+        function updateBadge() {
+            const badge = document.getElementById('queueBadge');
+            if(queueCount > 0) { badge.innerText = queueCount; badge.classList.remove('hidden'); } 
+            else { badge.classList.add('hidden'); }
+        }
+
+        function showPopup(text) {
+            const popup = document.getElementById('popupAlert');
+            document.getElementById('popupText').innerText = text;
+            popup.classList.remove('hide-section');
+            setTimeout(() => popup.classList.add('hide-section'), 2500);
+        }
+    </script>
+</body>
+</html>
