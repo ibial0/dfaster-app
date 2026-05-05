@@ -9,20 +9,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        /* UI FIX FOR MOBILE BOUNCE & OVERSCROLL */
         html, body {
             height: 100%;
             width: 100%;
             margin: 0;
             padding: 0;
-            overflow: hidden; /* Prevents the whole page from bouncing */
-            overscroll-behavior-y: none; /* Stops pull-to-refresh effect */
+            overflow: hidden;
+            overscroll-behavior-y: none;
             font-family: 'Inter', sans-serif;
             background-color: #0f172a;
             color: #f8fafc;
         }
 
-        /* Container that perfectly fits the screen */
         .app-container {
             width: 100%;
             height: 100%;
@@ -68,7 +66,7 @@
                 <div class="text-center mb-8">
                     <i class="fas fa-bolt text-5xl text-emerald-500 mb-4 drop-shadow-lg"></i>
                     <h2 class="text-xl font-semibold mb-2 text-slate-200">Download Video or Audio</h2>
-                    <p class="text-sm text-slate-400 text-center">Paste the link to access all available qualities including legacy formats</p>
+                    <p class="text-sm text-slate-400 text-center">Paste the link to access all available qualities</p>
                 </div>
 
                 <div class="glass-box p-2 flex items-center mb-6">
@@ -100,12 +98,10 @@
                 </div>
 
                 <h4 class="text-emerald-400 font-semibold text-xs uppercase tracking-wider mb-3 ml-1">Video Formats</h4>
-                <div id="videoFormatsContainer" class="space-y-2 mb-6">
-                    </div>
+                <div id="videoFormatsContainer" class="space-y-2 mb-6"></div>
 
                 <h4 class="text-emerald-400 font-semibold text-xs uppercase tracking-wider mb-3 ml-1">Audio Formats</h4>
-                <div id="audioFormatsContainer" class="space-y-2">
-                    </div>
+                <div id="audioFormatsContainer" class="space-y-2"></div>
             </div>
 
             <div id="historyView" class="app-section hide-section pb-20">
@@ -128,7 +124,6 @@
                 </div>
                 <div class="glass-box p-6 text-sm text-slate-300 leading-relaxed space-y-4">
                     <p>DFASTER ensures zero quality loss by fetching content directly from verified sources. Our system intelligently handles legacy formats to ensure support for all devices.</p>
-                    <p>Designed for speed and reliability the application uses an advanced queuing system to manage multiple downloads without slowing down your experience.</p>
                 </div>
             </div>
 
@@ -141,29 +136,13 @@
                 <div class="glass-box p-5 space-y-6">
                     <div>
                         <h3 class="text-emerald-400 font-semibold text-xs uppercase mb-4 tracking-widest">Auto Quality Selection</h3>
-                        
                         <label class="block text-[11px] text-slate-500 mb-2">Video Preference</label>
                         <select class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg p-3 outline-none text-sm mb-5 focus:border-emerald-500">
                             <option>Always Ask Me</option>
                             <option>Highest Available</option>
                             <option>Standard HD Quality</option>
                             <option>Lowest Quality</option>
-                            <option>Legacy 3GP Format</option>
                         </select>
-
-                        <label class="block text-[11px] text-slate-500 mb-2">Audio Preference</label>
-                        <select class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg p-3 outline-none text-sm focus:border-emerald-500">
-                            <option>Always Ask Me</option>
-                            <option>Highest Original Quality</option>
-                            <option>Low Quality for Legacy</option>
-                        </select>
-                    </div>
-
-                    <div class="pt-5 border-t border-slate-700">
-                        <label class="block text-[11px] text-slate-500 mb-3">Permanent Storage</label>
-                        <button class="w-full bg-slate-800 hover:bg-slate-700 text-white py-3 rounded-lg text-sm flex justify-center items-center smooth-trans">
-                            <i class="fas fa-folder-open mr-2 text-emerald-400"></i> Select Storage Folder
-                        </button>
                     </div>
                 </div>
             </div>
@@ -186,8 +165,8 @@
             </button>
         </nav>
 
-        <div id="toast" class="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-emerald-600 text-white px-5 py-2 rounded-full shadow-2xl hide-section z-50 text-[11px] font-bold flex items-center">
-            <i class="fas fa-check-circle mr-2"></i> <span id="toastMsg">Ready</span>
+        <div id="toast" class="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-slate-800 border border-slate-700 text-white px-5 py-3 rounded-xl shadow-2xl hide-section z-50 text-[11px] font-bold flex items-center max-w-[90%]">
+            <i class="fas fa-info-circle mr-3 text-emerald-400 text-lg"></i> <span id="toastMsg" class="break-words">Ready</span>
         </div>
 
     </div>
@@ -254,8 +233,9 @@
 
                 const data = await response.json();
 
+                // If backend gives an error, show the EXACT error reason
                 if(data.error) {
-                    showToast('Failed Invalid Link');
+                    showToast('Server Error: ' + data.error);
                     resetBtn();
                     return;
                 }
@@ -268,7 +248,7 @@
                 changeView('downloadView');
 
             } catch (err) {
-                showToast('Server is currently starting up, please wait...');
+                showToast('Network error or Server is sleeping. Try again in 30s.');
                 resetBtn();
             }
         }
@@ -390,7 +370,8 @@
             const t = document.getElementById('toast');
             document.getElementById('toastMsg').innerText = msg;
             t.classList.remove('hide-section');
-            setTimeout(() => t.classList.add('hide-section'), 2500);
+            // Show longer for reading errors
+            setTimeout(() => t.classList.add('hide-section'), 4500);
         }
     </script>
 </body>
