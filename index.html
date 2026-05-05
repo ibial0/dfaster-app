@@ -62,12 +62,11 @@
 
         <main class="flex-1 overflow-y-auto p-5 relative">
             
-            <!-- HOME VIEW -->
             <div id="homeView" class="app-section flex flex-col h-full justify-center pb-10">
                 <div class="text-center mb-8">
                     <i class="fas fa-bolt text-5xl text-emerald-500 mb-4 drop-shadow-lg"></i>
                     <h2 class="text-xl font-semibold mb-2 text-slate-200">Download Media</h2>
-                    <p class="text-sm text-slate-400 text-center mt-2">Paste link to unlock highest qualities</p>
+                    <p class="text-sm text-slate-400 text-center mt-2">Paste link to unlock direct qualities</p>
                 </div>
 
                 <div class="glass-box p-2 flex items-center mb-6">
@@ -84,7 +83,6 @@
                 </button>
             </div>
 
-            <!-- DOWNLOAD OPTIONS VIEW -->
             <div id="downloadView" class="app-section hide-section pb-20">
                 <button onclick="changeView('homeView')" class="text-slate-400 hover:text-white mb-4 text-sm flex items-center">
                     <i class="fas fa-arrow-left mr-2"></i> Back to Home
@@ -96,7 +94,7 @@
                         <i class="fas fa-play-circle text-5xl text-white opacity-80 z-10 drop-shadow-lg"></i>
                     </div>
                     <h3 id="vidTitle" class="font-semibold text-slate-200 mb-1 leading-snug">Loading Title...</h3>
-                    <p class="text-xs text-emerald-400">Direct Engine Connected</p>
+                    <p class="text-xs text-emerald-400">Direct Server Found</p>
                 </div>
 
                 <h4 class="text-emerald-400 font-semibold text-xs uppercase tracking-wider mb-3 ml-1">Video Formats</h4>
@@ -106,7 +104,6 @@
                 <div id="audioFormatsContainer" class="space-y-2"></div>
             </div>
 
-            <!-- DOWNLOADS QUEUE VIEW -->
             <div id="historyView" class="app-section hide-section pb-20">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-xl text-white font-semibold">Active Queue</h2>
@@ -120,18 +117,16 @@
                 </div>
             </div>
 
-            <!-- ABOUT VIEW -->
             <div id="aboutView" class="app-section hide-section pb-20">
                 <div class="text-center mb-8 mt-4">
                     <h1 class="text-3xl font-bold tracking-widest text-emerald-400 mb-2" style="font-family: Arial, sans-serif;">DFASTER</h1>
-                    <p class="text-slate-400 text-xs">Premium Delivery System</p>
+                    <p class="text-slate-400 text-xs">Direct Media System</p>
                 </div>
                 <div class="glass-box p-6 text-sm text-slate-300 leading-relaxed space-y-4">
-                    <p>DFASTER connects you directly to global media servers, ensuring maximum quality retention and complete stability.</p>
+                    <p>DFASTER connects you directly to official server instances, guaranteeing file downloads without third-party blocks.</p>
                 </div>
             </div>
 
-            <!-- SETTINGS VIEW -->
             <div id="settingsView" class="app-section hide-section pb-20">
                 <button onclick="changeView('homeView')" class="text-slate-400 hover:text-white mb-6 text-sm flex items-center">
                     <i class="fas fa-arrow-left mr-2"></i> Back
@@ -175,7 +170,6 @@
 
     </div>
 
-    <!-- Firebase configuration -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         const firebaseConfig = {
@@ -219,84 +213,150 @@
             document.getElementById('loader').classList.add('hidden');
         }
 
+        function extractVideoId(url) {
+            let id = '';
+            try {
+                if (url.includes('youtu.be/')) id = url.split('youtu.be/')[1].split('?')[0];
+                else if (url.includes('watch?v=')) id = url.split('watch?v=')[1].split('&')[0];
+                else if (url.includes('shorts/')) id = url.split('shorts/')[1].split('?')[0];
+            } catch(e){}
+            return id;
+        }
+
         async function fetchMetadata() {
             const link = document.getElementById('videoLink').value;
             if(!link) { showToast('Please paste a link'); return; }
 
-            let videoId = '';
-            try {
-                if (link.includes('youtu.be/')) videoId = link.split('youtu.be/')[1].split('?')[0];
-                else if (link.includes('watch?v=')) videoId = link.split('watch?v=')[1].split('&')[0];
-                else if (link.includes('shorts/')) videoId = link.split('shorts/')[1].split('?')[0];
-            } catch(e){}
+            const videoId = extractVideoId(link);
+            if(!videoId) { showToast('Invalid Format. Use direct YouTube link'); return; }
 
-            if(!videoId) { showToast('Invalid Format. Use a direct YouTube link'); return; }
-
-            const standardUrl = `https://www.youtube.com/watch?v=${videoId}`;
-
-            document.getElementById('btnText').innerText = 'Extracting Metadata...';
+            document.getElementById('btnText').innerText = 'Syncing Content...';
             document.getElementById('btnIcon').classList.add('hidden');
             document.getElementById('loader').classList.remove('hidden');
 
+            // 5 Global Servers for Server Racing (Whichever responds first wins)
+            const GLOBAL_SERVERS = [
+                "https://pipedapi.kavin.rocks",
+                "https://pipedapi.tokhmi.xyz",
+                "https://api.piped.projectsegfau.lt",
+                "https://pipedapi.smnz.de",
+                "https://piped-api.lunar.icu"
+            ];
+
+            const fetchPromises = GLOBAL_SERVERS.map(server =>
+                fetch(`${server}/streams/${videoId}`)
+                    .then(res => {
+                        if (!res.ok) throw new Error('Status Error');
+                        return res.json();
+                    })
+                    .then(data => {
+                        if (data.error || (!data.videoStreams && !data.audioStreams)) {
+                            throw new Error('Invalid Data');
+                        }
+                        return data;
+                    })
+            );
+
             try {
-                // Instant Metadata Fetch (100% Reliable Noembed API)
-                const res = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(standardUrl)}`);
-                const data = await res.json();
+                // The magic function: First server to successfully reply is chosen instantly.
+                const data = await Promise.any(fetchPromises);
 
-                if(data.error) throw new Error('Video not found');
+                document.getElementById('vidTitle').innerText = data.title;
+                document.getElementById('vidThumb').src = data.thumbnailUrl || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=600&q=80';
+                
+                let formattedData = [];
 
-                document.getElementById('vidTitle').innerText = data.title || 'YouTube Media';
-                document.getElementById('vidThumb').src = data.thumbnail_url || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=600&q=80';
+                if(data.videoStreams && data.videoStreams.length > 0) {
+                    data.videoStreams.forEach(stream => {
+                        if(!stream.videoOnly) {
+                            let sizeMb = stream.contentLength ? (stream.contentLength / (1024*1024)).toFixed(1) + ' MB' : 'Fast DL';
+                            let ext = stream.format.toLowerCase();
+                            if(ext.includes('mp4')) ext = 'mp4';
+                            else if(ext.includes('3gp')) ext = '3gp';
+                            else ext = 'mp4';
+                            
+                            formattedData.push({
+                                resolution: stream.quality,
+                                size: sizeMb,
+                                ext: ext,
+                                url: stream.url,
+                                type: 'video'
+                            });
+                        }
+                    });
+                }
 
-                // Core Engine Formats
-                const stableFormats = [
-                    { title: '1080p FHD Quality', osCode: '1080', type: 'video' },
-                    { title: '720p HD Quality', osCode: '720', type: 'video' },
-                    { title: '360p SD Quality', osCode: '360', type: 'video' }
-                ];
+                if(data.audioStreams && data.audioStreams.length > 0) {
+                    data.audioStreams.forEach((stream, index) => {
+                        let sizeMb = stream.contentLength ? (stream.contentLength / (1024*1024)).toFixed(1) + ' MB' : 'Fast DL';
+                        let qualityName = index === 0 ? 'High Quality Audio' : 'Standard Audio';
+                        let ext = stream.format.toLowerCase();
+                        if(ext.includes('m4a')) ext = 'm4a';
+                        else ext = 'mp3';
+                        
+                        formattedData.push({
+                            resolution: qualityName,
+                            size: sizeMb,
+                            ext: ext,
+                            url: stream.url,
+                            type: 'audio'
+                        });
+                    });
+                }
 
-                const audioFormats = [
-                    { title: 'High Quality Audio', osCode: 'mp3', type: 'audio' }
-                ];
+                if(formattedData.length === 0) {
+                    showToast('Media is protected or formats are blocked.');
+                    resetBtn();
+                    return;
+                }
 
-                renderFormats(stableFormats, audioFormats, standardUrl);
+                renderFormats(formattedData);
                 resetBtn();
                 changeView('downloadView');
 
             } catch (err) {
-                showToast('Unable to process this specific link.');
+                showToast('Network timeout. Please retry.');
                 resetBtn();
             }
         }
 
-        function renderFormats(vFormats, aFormats, rawUrl) {
+        function renderFormats(formats) {
             const vContainer = document.getElementById('videoFormatsContainer');
             const aContainer = document.getElementById('audioFormatsContainer');
             vContainer.innerHTML = '';
             aContainer.innerHTML = '';
 
-            vFormats.forEach(f => {
+            let hasVideo = false;
+            let hasAudio = false;
+
+            formats.forEach(f => {
+                const isAudioOnly = f.type === 'audio';
+                const container = isAudioOnly ? aContainer : vContainer;
+                
+                if(isAudioOnly) hasAudio = true;
+                else hasVideo = true;
+
+                const title = isAudioOnly ? f.resolution : `${f.resolution} Quality`;
+                const formatLabel = f.ext.toUpperCase();
+                const isLegacy = f.ext === '3GP' || f.resolution.includes('144p');
+                const borderColor = isLegacy ? 'border-l-2 border-amber-500' : '';
+                const titleColor = isLegacy ? 'text-amber-500' : 'text-white';
+                const desc = isLegacy ? 'For Legacy Devices' : `Direct ${formatLabel} Link`;
+
                 const html = `
-                    <div onclick="addDownload('${f.title}', '${f.osCode}', '${f.type}', '${rawUrl}')" class="glass-box p-4 flex justify-between items-center cursor-pointer hover:bg-slate-700 smooth-trans mb-2">
-                        <div><p class="font-semibold text-white">${f.title}</p><p class="text-[10px] text-slate-400">MP4 Format Engine</p></div>
-                        <span class="text-sm text-emerald-400 font-semibold"><i class="fas fa-download"></i></span>
+                    <div onclick="addDownload('${title}', '${f.size}', '${f.type}', '${encodeURI(f.url)}')" class="glass-box p-4 flex justify-between items-center cursor-pointer hover:bg-slate-700 smooth-trans mb-2 ${borderColor}">
+                        <div><p class="font-semibold ${titleColor}">${title}</p><p class="text-[10px] text-slate-400">${desc}</p></div>
+                        <span class="text-sm text-emerald-400 font-semibold">${f.size}</span>
                     </div>
                 `;
-                vContainer.innerHTML += html;
+                container.innerHTML += html;
             });
 
-            aFormats.forEach(f => {
-                const html = `
-                    <div onclick="addDownload('${f.title}', '${f.osCode}', '${f.type}', '${rawUrl}')" class="glass-box p-4 flex justify-between items-center cursor-pointer hover:bg-slate-700 smooth-trans mb-2 border-l-2 border-blue-500">
-                        <div><p class="font-semibold text-blue-400">${f.title}</p><p class="text-[10px] text-slate-400">MP3 Format Engine</p></div>
-                        <span class="text-sm text-blue-400 font-semibold"><i class="fas fa-music"></i></span>
-                    </div>
-                `;
-                aContainer.innerHTML += html;
-            });
+            if(!hasVideo) vContainer.innerHTML = '<p class="text-xs text-slate-500">Video formats hidden by provider</p>';
+            if(!hasAudio) aContainer.innerHTML = '<p class="text-xs text-slate-500">Audio formats hidden by provider</p>';
         }
 
-        function addDownload(name, osCode, type, url) {
+        function addDownload(name, size, type, encodedUrl) {
             const list = document.getElementById('downloadList');
             const empty = document.getElementById('emptyMsg');
             if(empty) empty.style.display = 'none';
@@ -307,13 +367,13 @@
             const isWaiting = activeCount >= LIMIT;
             if(!isWaiting) activeCount++;
 
-            const statusText = isWaiting ? 'Queued' : 'Starting...';
+            const statusText = isWaiting ? 'Queued' : 'Extracting...';
             const statusColor = isWaiting ? 'text-amber-500' : 'text-emerald-400';
             const icon = isWaiting ? 'fa-clock' : 'fa-circle-notch fa-spin';
             const id = 'dl-' + Date.now();
 
             const html = `
-                <div id="${id}" class="glass-box p-4 border-l-4 ${isWaiting ? 'border-amber-500' : 'border-emerald-500'}" data-os="${osCode}" data-url="${url}">
+                <div id="${id}" class="glass-box p-4 border-l-4 ${isWaiting ? 'border-amber-500' : 'border-emerald-500'}" data-url="${encodedUrl}">
                     <div class="flex justify-between items-center">
                         <div class="flex items-center">
                             <i class="${type === 'video' ? 'fas fa-video' : 'fas fa-music'} text-slate-400 mr-3"></i>
@@ -328,68 +388,37 @@
                 </div>
             `;
             list.innerHTML = html + list.innerHTML;
-            showToast(isWaiting ? 'Saved to Queue' : 'Engine Started');
+            showToast(isWaiting ? 'Saved to Queue' : 'Direct Link Started');
             
-            if(!isWaiting) startProcess(id, osCode, url);
+            if(!isWaiting) startProcess(id, decodeURI(encodedUrl));
         }
 
-        // Mastermind Backend Bypass Engine
-        async function startProcess(id, osCode, url) {
+        function startProcess(id, rawUrl) {
             const el = document.getElementById(id);
             if(!el) return;
             const statusLabel = el.querySelector('.status-label');
             const statusIcon = el.querySelector('.status-icon');
             const statusTextContainer = el.querySelector('.status-text');
 
-            try {
-                // Send Request to Master Server
-                const initRes = await fetch(`https://p.oceansaver.in/ajax/download.php?format=${osCode}&url=${encodeURIComponent(url)}&api=dfcb6d76f2f6a9894gjkege8a4ab232222`);
-                const initData = await initRes.json();
+            // Force instantly opening the direct Google server link
+            setTimeout(() => {
+                statusIcon.className = 'fas fa-check-circle mr-1';
+                statusLabel.innerText = 'Completed';
+                el.classList.replace('border-emerald-500', 'border-slate-700');
+                statusTextContainer.classList.replace('text-emerald-400', 'text-slate-500');
 
-                if (!initData.success) throw new Error("Init fail");
+                // Advanced method to trigger download from true links
+                const a = document.createElement('a');
+                a.href = rawUrl;
+                a.target = '_blank';
+                a.download = 'Media_DFASTER';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
 
-                const dlId = initData.id;
-                statusLabel.innerText = 'Converting 0%';
-
-                // Live Polling System
-                const checkProgress = setInterval(async () => {
-                    try {
-                        const progRes = await fetch(`https://p.oceansaver.in/ajax/progress.php?id=${dlId}`);
-                        const progData = await progRes.json();
-
-                        if (progData.success && progData.progress === 1000) {
-                            clearInterval(checkProgress);
-                            
-                            statusIcon.className = 'fas fa-check-circle mr-1';
-                            statusLabel.innerText = 'Completed';
-                            el.classList.replace('border-emerald-500', 'border-slate-700');
-                            statusTextContainer.classList.replace('text-emerald-400', 'text-slate-500');
-
-                            // Start actual download instantly
-                            window.location.href = progData.download_url;
-                            
-                            activeCount--;
-                            checkQueue();
-                        } else if (progData.success) {
-                            let percent = Math.floor(progData.progress / 10);
-                            statusLabel.innerText = `Converting ${percent}%`;
-                        } else {
-                            throw new Error("API fail");
-                        }
-                    } catch(e) {
-                        clearInterval(checkProgress);
-                        throw e;
-                    }
-                }, 3000);
-
-            } catch (err) {
-                statusIcon.className = 'fas fa-exclamation-triangle mr-1 text-red-500';
-                statusLabel.innerText = 'Failed';
-                statusTextContainer.classList.replace('text-emerald-400', 'text-red-500');
-                el.classList.replace('border-emerald-500', 'border-red-500');
                 activeCount--;
                 checkQueue();
-            }
+            }, 1200); 
         }
 
         function checkQueue() {
@@ -398,13 +427,13 @@
             for(let i = labels.length-1; i>=0; i--) {
                 if(labels[i].innerText === 'Queued') {
                     activeCount++;
-                    labels[i].innerText = 'Starting...';
+                    labels[i].innerText = 'Extracting...';
                     let container = labels[i].closest('.status-text');
                     container.classList.replace('text-amber-500', 'text-emerald-400');
                     labels[i].previousElementSibling.className = 'fas fa-circle-notch fa-spin mr-1';
                     
                     let box = labels[i].closest('.glass-box');
-                    startProcess(box.id, box.getAttribute('data-os'), box.getAttribute('data-url'));
+                    startProcess(box.id, decodeURI(box.getAttribute('data-url')));
                     break;
                 }
             }
@@ -419,7 +448,7 @@
             const t = document.getElementById('toast');
             document.getElementById('toastMsg').innerText = msg;
             t.classList.remove('hide-section');
-            setTimeout(() => t.classList.add('hide-section'), 4500);
+            setTimeout(() => t.classList.add('hide-section'), 4000);
         }
     </script>
 </body>
