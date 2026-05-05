@@ -2,14 +2,47 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>DFASTER - Professional Downloader</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #0f172a; color: #f8fafc; overflow-x: hidden; }
+        /* UI FIX FOR MOBILE BOUNCE & OVERSCROLL */
+        html, body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevents the whole page from bouncing */
+            overscroll-behavior-y: none; /* Stops pull-to-refresh effect */
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+        }
+
+        /* Container that perfectly fits the screen */
+        .app-container {
+            width: 100%;
+            height: 100%;
+            max-width: 28rem;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            background-color: #1e293b;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            overflow: hidden;
+        }
+
+        @media (min-width: 640px) {
+            .app-container {
+                border-left: 1px solid #0f172a;
+                border-right: 1px solid #0f172a;
+            }
+        }
+
         .glass-box { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 16px; }
         .smooth-trans { transition: all 0.3s ease; }
         .hide-section { display: none !important; }
@@ -18,9 +51,9 @@
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
 </head>
-<body class="min-h-screen flex flex-col items-center justify-center">
+<body class="flex items-center justify-center">
 
-    <div class="w-full max-w-md h-[100dvh] flex flex-col relative bg-[#1e293b] shadow-2xl sm:border sm:border-slate-800">
+    <div class="app-container">
         
         <header class="flex justify-between items-center p-5 bg-[#0f172a] z-10 border-b border-slate-800">
             <h1 class="text-2xl font-bold tracking-widest text-emerald-400" style="font-family: Arial, sans-serif;">DFASTER</h1>
@@ -31,7 +64,6 @@
 
         <main class="flex-1 overflow-y-auto p-5 relative">
             
-            <!-- HOME VIEW -->
             <div id="homeView" class="app-section flex flex-col h-full justify-center pb-10">
                 <div class="text-center mb-8">
                     <i class="fas fa-bolt text-5xl text-emerald-500 mb-4 drop-shadow-lg"></i>
@@ -53,7 +85,6 @@
                 </button>
             </div>
 
-            <!-- DOWNLOAD OPTIONS VIEW -->
             <div id="downloadView" class="app-section hide-section pb-20">
                 <button onclick="changeView('homeView')" class="text-slate-400 hover:text-white mb-4 text-sm flex items-center">
                     <i class="fas fa-arrow-left mr-2"></i> Back to Home
@@ -70,16 +101,13 @@
 
                 <h4 class="text-emerald-400 font-semibold text-xs uppercase tracking-wider mb-3 ml-1">Video Formats</h4>
                 <div id="videoFormatsContainer" class="space-y-2 mb-6">
-                    <!-- Video formats will load here dynamically -->
-                </div>
+                    </div>
 
                 <h4 class="text-emerald-400 font-semibold text-xs uppercase tracking-wider mb-3 ml-1">Audio Formats</h4>
                 <div id="audioFormatsContainer" class="space-y-2">
-                    <!-- Audio formats will load here dynamically -->
-                </div>
+                    </div>
             </div>
 
-            <!-- DOWNLOADS QUEUE VIEW -->
             <div id="historyView" class="app-section hide-section pb-20">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-xl text-white font-semibold">Active Downloads</h2>
@@ -93,7 +121,6 @@
                 </div>
             </div>
 
-            <!-- ABOUT VIEW -->
             <div id="aboutView" class="app-section hide-section pb-20">
                 <div class="text-center mb-8 mt-4">
                     <h1 class="text-3xl font-bold tracking-widest text-emerald-400 mb-2" style="font-family: Arial, sans-serif;">DFASTER</h1>
@@ -105,7 +132,6 @@
                 </div>
             </div>
 
-            <!-- SETTINGS VIEW -->
             <div id="settingsView" class="app-section hide-section pb-20">
                 <button onclick="changeView('homeView')" class="text-slate-400 hover:text-white mb-6 text-sm flex items-center">
                     <i class="fas fa-arrow-left mr-2"></i> Back
@@ -166,7 +192,6 @@
 
     </div>
 
-    <!-- Firebase configuration -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         const firebaseConfig = {
@@ -185,7 +210,6 @@
         let activeCount = 0;
         const LIMIT = 3;
 
-        // The URL of your live Render backend
         const BACKEND_URL = "https://dfaster-engine.onrender.com/api/get-info";
 
         function changeView(viewId) {
@@ -222,7 +246,6 @@
             document.getElementById('loader').classList.remove('hidden');
 
             try {
-                // Requesting data from your Render Server
                 const response = await fetch(BACKEND_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -232,12 +255,11 @@
                 const data = await response.json();
 
                 if(data.error) {
-                    showToast('Failed: Invalid Link');
+                    showToast('Failed Invalid Link');
                     resetBtn();
                     return;
                 }
 
-                // Updating UI with real video data
                 document.getElementById('vidTitle').innerText = data.title;
                 document.getElementById('vidThumb').src = data.thumbnail || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=600&q=80';
                 
@@ -246,7 +268,7 @@
                 changeView('downloadView');
 
             } catch (err) {
-                showToast('Server is currently starting up, please wait a moment and try again');
+                showToast('Server is currently starting up, please wait...');
                 resetBtn();
             }
         }
@@ -260,7 +282,6 @@
             let hasVideo = false;
             let hasAudio = false;
 
-            // Sorting formats logically
             formats.forEach(f => {
                 const isAudioOnly = f.resolution === 'Audio Only' || f.vcodec === 'none';
                 const container = isAudioOnly ? aContainer : vContainer;
@@ -270,7 +291,6 @@
 
                 const title = isAudioOnly ? 'Audio Quality' : `${f.resolution} Quality`;
                 const formatLabel = f.ext.toUpperCase();
-                // Special check for Legacy
                 const isLegacy = f.ext === '3gp' || f.resolution === '144p';
                 const borderColor = isLegacy ? 'border-l-2 border-amber-500' : '';
                 const titleColor = isLegacy ? 'text-amber-500' : 'text-white';
@@ -318,7 +338,6 @@
                             </p>
                         </div>
                     </div>
-                    <!-- Real download link -->
                     <a href="${url}" target="_blank" rel="noopener noreferrer" class="hidden real-link"></a>
                 </div>
             `;
@@ -331,11 +350,9 @@
         function startProcess(id) {
             const el = document.getElementById(id);
             if(el) {
-                // Here we simulate the wait, but we actually trigger the real file URL
                 setTimeout(() => {
                     const realLink = el.querySelector('.real-link');
                     if(realLink && realLink.href && realLink.href !== "undefined") {
-                        // Open the actual download URL in background
                         window.open(realLink.href, '_blank');
                     }
                     
@@ -345,7 +362,7 @@
                     el.querySelector('.status-text')?.classList.replace('text-emerald-400', 'text-slate-500');
                     activeCount--;
                     checkQueue();
-                }, 3000); // Simulated download progress time
+                }, 3000); 
             }
         }
 
