@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DFASTER - Professional Downloader</title>
+    <title>DFASTER</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -27,7 +27,6 @@
         .hide-section {
             display: none !important;
         }
-        /* Custom Scrollbar for better UI */
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
@@ -77,8 +76,8 @@
                         <img src="https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=600&q=80" alt="Video Thumbnail" class="absolute inset-0 w-full h-full object-cover opacity-70">
                         <i class="fas fa-play-circle text-5xl text-white opacity-80 z-10 drop-shadow-lg"></i>
                     </div>
-                    <h3 class="font-semibold text-slate-200 mb-1 leading-snug">Sample Professional Content - Dynamic Metadata</h3>
-                    <p class="text-xs text-emerald-400">Status: Authentic Source Found</p>
+                    <h3 class="font-semibold text-slate-200 mb-1 leading-snug">Sample Professional Content</h3>
+                    <p class="text-xs text-emerald-400">Status Authentic Source Found</p>
                 </div>
 
                 <h4 class="text-emerald-400 font-semibold text-xs uppercase tracking-wider mb-3 ml-1">Video Formats</h4>
@@ -117,7 +116,7 @@
             <div id="historyView" class="app-section hide-section pb-20">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-xl text-white font-semibold">Active Downloads</h2>
-                    <span class="text-[10px] bg-slate-800 text-emerald-400 px-2 py-1 rounded border border-slate-700">Limit: 3 Concurrent</span>
+                    <span class="text-[10px] bg-slate-800 text-emerald-400 px-2 py-1 rounded border border-slate-700">Limit 3 Concurrent</span>
                 </div>
                 <div id="downloadList" class="space-y-3">
                     <div id="emptyMsg" class="text-center text-slate-500 mt-20">
@@ -134,7 +133,7 @@
                 </div>
                 <div class="glass-box p-6 text-sm text-slate-300 leading-relaxed space-y-4">
                     <p>DFASTER ensures zero quality loss by fetching content directly from verified sources. Our system intelligently handles legacy formats like 3GP to ensure support for all devices.</p>
-                    <p>Designed for speed and reliability, the application uses an advanced queuing system to manage multiple downloads without slowing down your experience.</p>
+                    <p>Designed for speed and reliability the application uses an advanced queuing system to manage multiple downloads without slowing down your experience.</p>
                 </div>
             </div>
 
@@ -152,9 +151,9 @@
                         <select class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg p-3 outline-none text-sm mb-5 focus:border-emerald-500">
                             <option>Always Ask Me</option>
                             <option>Highest Available</option>
-                            <option>Standard HD (720p)</option>
+                            <option>Standard HD Quality</option>
                             <option>Lowest Quality</option>
-                            <option>Legacy (3GP) Format</option>
+                            <option>Legacy 3GP Format</option>
                         </select>
 
                         <label class="block text-[11px] text-slate-500 mb-2">Audio Preference</label>
@@ -198,6 +197,24 @@
 
     </div>
 
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBYHZmu9IoAP42HEuLjRZdtLZN9TdEwLmY",
+            authDomain: "dfaster.firebaseapp.com",
+            projectId: "dfaster",
+            storageBucket: "dfaster.firebasestorage.app",
+            messagingSenderId: "665888111641",
+            appId: "1:665888111641:web:8b2e64fdb5b790a77bfe88"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        console.log("Firebase Connected Successfully!");
+    </script>
+
     <script>
         let downloadQueue = 0;
         let activeCount = 0;
@@ -226,7 +243,7 @@
             const link = document.getElementById('videoLink').value;
             if(!link) { showToast('Please paste a link'); return; }
 
-            document.getElementById('btnText').innerText = 'Syncing...';
+            document.getElementById('btnText').innerText = 'Syncing Content';
             document.getElementById('btnIcon').classList.add('hidden');
             document.getElementById('loader').classList.remove('hidden');
 
@@ -282,7 +299,7 @@
                     el.querySelector('.status-icon').className = 'fas fa-check-circle mr-1';
                     el.querySelector('.status-label').innerText = 'Completed';
                     el.classList.replace('border-emerald-500', 'border-slate-700');
-                    el.querySelector('.status-color')?.classList.replace('text-emerald-400', 'text-slate-500');
+                    el.querySelector('.status-text')?.classList.replace('text-emerald-400', 'text-slate-500');
                     activeCount--;
                     checkQueue();
                 }
@@ -296,7 +313,7 @@
                 if(labels[i].innerText === 'Queued') {
                     activeCount++;
                     labels[i].innerText = 'Downloading';
-                    labels[i].closest('.status-text').classList.replace('text-amber-500', 'text-emerald-400');
+                    labels[i].closest('.text-amber-500').classList.replace('text-amber-500', 'text-emerald-400');
                     labels[i].previousElementSibling.className = 'fas fa-circle-notch fa-spin mr-1';
                     startProcess(labels[i].closest('.glass-box').id);
                     break;
