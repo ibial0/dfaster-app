@@ -65,12 +65,12 @@
             <div id="homeView" class="app-section flex flex-col h-full justify-center pb-10">
                 <div class="text-center mb-8">
                     <i class="fas fa-bolt text-5xl text-emerald-500 mb-4 drop-shadow-lg"></i>
-                    <h2 class="text-xl font-semibold mb-2 text-slate-200">Download Video or Audio</h2>
-                    <p class="text-sm text-slate-400 text-center">Paste the link to access all available qualities</p>
+                    <h2 class="text-xl font-semibold mb-2 text-slate-200">Download Media</h2>
+                    <p class="text-sm text-slate-400 text-center mt-2">Paste link to unlock highest qualities</p>
                 </div>
 
                 <div class="glass-box p-2 flex items-center mb-6">
-                    <input type="text" id="videoLink" placeholder="Paste video link here" class="w-full bg-transparent text-white px-4 py-3 outline-none placeholder-slate-500 text-sm">
+                    <input type="text" id="videoLink" placeholder="Paste YouTube link here" class="w-full bg-transparent text-white px-4 py-3 outline-none placeholder-slate-500 text-sm">
                     <button onclick="pasteLink()" class="p-3 text-slate-400 hover:text-emerald-400 smooth-trans">
                         <i class="fas fa-paste"></i>
                     </button>
@@ -94,7 +94,7 @@
                         <i class="fas fa-play-circle text-5xl text-white opacity-80 z-10 drop-shadow-lg"></i>
                     </div>
                     <h3 id="vidTitle" class="font-semibold text-slate-200 mb-1 leading-snug">Loading Title...</h3>
-                    <p class="text-xs text-emerald-400">Status Authentic Source Found</p>
+                    <p class="text-xs text-emerald-400">Connection Secured</p>
                 </div>
 
                 <h4 class="text-emerald-400 font-semibold text-xs uppercase tracking-wider mb-3 ml-1">Video Formats</h4>
@@ -106,12 +106,12 @@
 
             <div id="historyView" class="app-section hide-section pb-20">
                 <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl text-white font-semibold">Active Downloads</h2>
-                    <span class="text-[10px] bg-slate-800 text-emerald-400 px-2 py-1 rounded border border-slate-700">Limit 3 Concurrent</span>
+                    <h2 class="text-xl text-white font-semibold">Active Queue</h2>
+                    <span class="text-[10px] bg-slate-800 text-emerald-400 px-2 py-1 rounded border border-slate-700">Limit 3</span>
                 </div>
                 <div id="downloadList" class="space-y-3">
                     <div id="emptyMsg" class="text-center text-slate-500 mt-20">
-                        <i class="fas fa-download text-4xl mb-3 opacity-30"></i>
+                        <i class="fas fa-folder-open text-4xl mb-3 opacity-30"></i>
                         <p class="text-sm">No files in queue</p>
                     </div>
                 </div>
@@ -120,10 +120,10 @@
             <div id="aboutView" class="app-section hide-section pb-20">
                 <div class="text-center mb-8 mt-4">
                     <h1 class="text-3xl font-bold tracking-widest text-emerald-400 mb-2" style="font-family: Arial, sans-serif;">DFASTER</h1>
-                    <p class="text-slate-400 text-xs">Authentic Content Delivery System</p>
+                    <p class="text-slate-400 text-xs">Premium Delivery System</p>
                 </div>
                 <div class="glass-box p-6 text-sm text-slate-300 leading-relaxed space-y-4">
-                    <p>DFASTER ensures zero quality loss by fetching content directly from verified sources. Our system intelligently handles legacy formats to ensure support for all devices.</p>
+                    <p>DFASTER connects you directly to global media servers, ensuring maximum quality retention and complete legacy device support.</p>
                 </div>
             </div>
 
@@ -135,12 +135,11 @@
                 
                 <div class="glass-box p-5 space-y-6">
                     <div>
-                        <h3 class="text-emerald-400 font-semibold text-xs uppercase mb-4 tracking-widest">Auto Quality Selection</h3>
-                        <label class="block text-[11px] text-slate-500 mb-2">Video Preference</label>
-                        <select class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg p-3 outline-none text-sm mb-5 focus:border-emerald-500">
+                        <h3 class="text-emerald-400 font-semibold text-xs uppercase mb-4 tracking-widest">Quality Preferences</h3>
+                        <label class="block text-[11px] text-slate-500 mb-2">Default Video</label>
+                        <select class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg p-3 outline-none text-sm mb-5">
                             <option>Always Ask Me</option>
                             <option>Highest Available</option>
-                            <option>Standard HD Quality</option>
                             <option>Lowest Quality</option>
                         </select>
                     </div>
@@ -156,7 +155,7 @@
             </button>
             <button onclick="changeView('historyView')" id="navHistory" class="flex-1 flex flex-col items-center text-slate-500 hover:text-emerald-400 smooth-trans p-1 relative">
                 <i class="fas fa-download text-lg mb-1"></i>
-                <span class="text-[9px] font-bold uppercase tracking-tighter">Downloads</span>
+                <span class="text-[9px] font-bold uppercase tracking-tighter">Queue</span>
                 <span id="badge" class="absolute top-0 right-7 bg-emerald-500 text-white text-[8px] rounded-full w-3 h-3 flex items-center justify-center hidden">0</span>
             </button>
             <button onclick="changeView('aboutView')" id="navAbout" class="flex-1 flex flex-col items-center text-slate-500 hover:text-emerald-400 smooth-trans p-1">
@@ -190,6 +189,15 @@
         let activeCount = 0;
         const LIMIT = 3;
 
+        // Auto-Failover Server Network (5 Most Reliable Instances)
+        const GLOBAL_SERVERS = [
+            "https://pipedapi.tokhmi.xyz",
+            "https://api.piped.projectsegfau.lt",
+            "https://pipedapi.smnz.de",
+            "https://piped-api.lunar.icu",
+            "https://pipedapi.kavin.rocks"
+        ];
+
         function changeView(viewId) {
             document.querySelectorAll('.app-section').forEach(el => el.classList.add('hide-section'));
             document.getElementById(viewId).classList.remove('hide-section');
@@ -217,14 +225,26 @@
 
         function extractVideoId(url) {
             let id = '';
-            if (url.includes('youtu.be/')) {
-                id = url.split('youtu.be/')[1].split('?')[0];
-            } else if (url.includes('watch?v=')) {
-                id = url.split('watch?v=')[1].split('&')[0];
-            } else if (url.includes('shorts/')) {
-                id = url.split('shorts/')[1].split('?')[0];
-            }
+            try {
+                if (url.includes('youtu.be/')) {
+                    id = url.split('youtu.be/')[1].split('?')[0];
+                } else if (url.includes('watch?v=')) {
+                    id = url.split('watch?v=')[1].split('&')[0];
+                } else if (url.includes('shorts/')) {
+                    id = url.split('shorts/')[1].split('?')[0];
+                }
+            } catch(e){}
             return id;
+        }
+
+        // Custom fetch with timeout to quickly skip dead servers
+        async function fetchWithTimeout(resource, options = {}) {
+            const { timeout = 6000 } = options; // 6 seconds wait per server
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), timeout);
+            const response = await fetch(resource, { ...options, signal: controller.signal });
+            clearTimeout(id);
+            return response;
         }
 
         async function fetchMetadata() {
@@ -232,26 +252,47 @@
             if(!link) { showToast('Please paste a link'); return; }
 
             const videoId = extractVideoId(link);
-            if(!videoId) { showToast('Invalid YouTube Link format'); return; }
+            if(!videoId) { showToast('Invalid Format. Use direct YouTube link'); return; }
 
-            document.getElementById('btnText').innerText = 'Syncing Content';
+            document.getElementById('btnText').innerText = 'Scanning Secure Servers...';
             document.getElementById('btnIcon').classList.add('hidden');
             document.getElementById('loader').classList.remove('hidden');
 
-            try {
-                // Using Piped API - Completely bypasses backend servers and IP blocks
-                const apiUrl = `https://pipedapi.kavin.rocks/streams/${videoId}`;
-                const response = await fetch(apiUrl);
-                
-                if(!response.ok) throw new Error('API Error');
-                const data = await response.json();
+            let data = null;
+            let success = false;
 
+            // Loop through our 5 global servers. If one is busy, switch to the next instantly.
+            for (let server of GLOBAL_SERVERS) {
+                try {
+                    const apiUrl = `${server}/streams/${videoId}`;
+                    const response = await fetchWithTimeout(apiUrl);
+                    
+                    if(response.ok) {
+                        data = await response.json();
+                        if(data && (data.videoStreams || data.audioStreams)) {
+                            success = true;
+                            console.log("Successfully connected to:", server);
+                            break; // Stop looping, we found a working server!
+                        }
+                    }
+                } catch (err) {
+                    console.log(server + " is busy. Switching to next...");
+                }
+            }
+
+            if (!success) {
+                showToast('All global networks are currently maxed out. Try again in 30 seconds.');
+                resetBtn();
+                return;
+            }
+
+            try {
+                // If we got here, we have the real data
                 document.getElementById('vidTitle').innerText = data.title;
                 document.getElementById('vidThumb').src = data.thumbnailUrl || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=600&q=80';
                 
                 let formattedData = [];
 
-                // Process Videos (combining audio and video streams)
                 if(data.videoStreams && data.videoStreams.length > 0) {
                     data.videoStreams.forEach(stream => {
                         if(!stream.videoOnly) {
@@ -271,7 +312,6 @@
                     });
                 }
 
-                // Process Audios
                 if(data.audioStreams && data.audioStreams.length > 0) {
                     data.audioStreams.forEach((stream, index) => {
                         let sizeMb = stream.contentLength ? (stream.contentLength / (1024*1024)).toFixed(2) + ' MB' : 'Fast DL';
@@ -290,18 +330,12 @@
                     });
                 }
 
-                if(formattedData.length === 0) {
-                    showToast('No public download formats found for this video.');
-                    resetBtn();
-                    return;
-                }
-
                 renderFormats(formattedData);
                 resetBtn();
                 changeView('downloadView');
 
             } catch (err) {
-                showToast('Error: Invalid Link or Server is busy. Try again.');
+                showToast('Format parsing error. Try another video.');
                 resetBtn();
             }
         }
@@ -327,7 +361,7 @@
                 const isLegacy = f.ext === '3gp' || f.resolution.includes('144p');
                 const borderColor = isLegacy ? 'border-l-2 border-amber-500' : '';
                 const titleColor = isLegacy ? 'text-amber-500' : 'text-white';
-                const desc = isLegacy ? 'For Legacy Devices' : `${formatLabel} Format`;
+                const desc = isLegacy ? 'Legacy Protocol' : `${formatLabel} System`;
 
                 const html = `
                     <div onclick="addDownload('${title}', '${f.size}', '${f.type}', '${f.url}')" class="glass-box p-4 flex justify-between items-center cursor-pointer hover:bg-slate-700 smooth-trans mb-2 ${borderColor}">
@@ -338,8 +372,8 @@
                 container.innerHTML += html;
             });
 
-            if(!hasVideo) vContainer.innerHTML = '<p class="text-xs text-slate-500">No video formats found</p>';
-            if(!hasAudio) aContainer.innerHTML = '<p class="text-xs text-slate-500">No audio formats found</p>';
+            if(!hasVideo) vContainer.innerHTML = '<p class="text-xs text-slate-500">Video formats hidden by provider</p>';
+            if(!hasAudio) aContainer.innerHTML = '<p class="text-xs text-slate-500">Audio formats hidden by provider</p>';
         }
 
         function addDownload(name, size, type, url) {
@@ -375,7 +409,7 @@
                 </div>
             `;
             list.innerHTML = html + list.innerHTML;
-            showToast(isWaiting ? 'Added to Queue' : 'Download Started');
+            showToast(isWaiting ? 'Saved to Queue' : 'Download Initiated');
             
             if(!isWaiting) startProcess(id);
         }
@@ -395,7 +429,7 @@
                     el.querySelector('.status-text')?.classList.replace('text-emerald-400', 'text-slate-500');
                     activeCount--;
                     checkQueue();
-                }, 3000); 
+                }, 1500); 
             }
         }
 
