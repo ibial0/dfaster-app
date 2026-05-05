@@ -171,6 +171,7 @@
 
     </div>
 
+    <!-- Firebase configuration -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         const firebaseConfig = {
@@ -188,8 +189,6 @@
         let downloadQueue = 0;
         let activeCount = 0;
         const LIMIT = 3;
-
-        const BACKEND_URL = "https://dfaster-engine.onrender.com/api/get-info";
 
         function changeView(viewId) {
             document.querySelectorAll('.app-section').forEach(el => el.classList.add('hide-section'));
@@ -216,39 +215,93 @@
             document.getElementById('loader').classList.add('hidden');
         }
 
+        function extractVideoId(url) {
+            let id = '';
+            if (url.includes('youtu.be/')) {
+                id = url.split('youtu.be/')[1].split('?')[0];
+            } else if (url.includes('watch?v=')) {
+                id = url.split('watch?v=')[1].split('&')[0];
+            } else if (url.includes('shorts/')) {
+                id = url.split('shorts/')[1].split('?')[0];
+            }
+            return id;
+        }
+
         async function fetchMetadata() {
             const link = document.getElementById('videoLink').value;
             if(!link) { showToast('Please paste a link'); return; }
+
+            const videoId = extractVideoId(link);
+            if(!videoId) { showToast('Invalid YouTube Link format'); return; }
 
             document.getElementById('btnText').innerText = 'Syncing Content';
             document.getElementById('btnIcon').classList.add('hidden');
             document.getElementById('loader').classList.remove('hidden');
 
             try {
-                const response = await fetch(BACKEND_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: link })
-                });
-
+                // Using Piped API - Completely bypasses backend servers and IP blocks
+                const apiUrl = `https://pipedapi.kavin.rocks/streams/${videoId}`;
+                const response = await fetch(apiUrl);
+                
+                if(!response.ok) throw new Error('API Error');
                 const data = await response.json();
 
-                // If backend gives an error, show the EXACT error reason
-                if(data.error) {
-                    showToast('Server Error: ' + data.error);
+                document.getElementById('vidTitle').innerText = data.title;
+                document.getElementById('vidThumb').src = data.thumbnailUrl || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=600&q=80';
+                
+                let formattedData = [];
+
+                // Process Videos (combining audio and video streams)
+                if(data.videoStreams && data.videoStreams.length > 0) {
+                    data.videoStreams.forEach(stream => {
+                        if(!stream.videoOnly) {
+                            let sizeMb = stream.contentLength ? (stream.contentLength / (1024*1024)).toFixed(2) + ' MB' : 'Fast DL';
+                            let ext = stream.format.toLowerCase();
+                            if(ext.includes('mpeg_4') || ext.includes('mp4')) ext = 'mp4';
+                            if(ext.includes('3gpp')) ext = '3gp';
+                            
+                            formattedData.push({
+                                resolution: stream.quality,
+                                size: sizeMb,
+                                ext: ext,
+                                url: stream.url,
+                                type: 'video'
+                            });
+                        }
+                    });
+                }
+
+                // Process Audios
+                if(data.audioStreams && data.audioStreams.length > 0) {
+                    data.audioStreams.forEach((stream, index) => {
+                        let sizeMb = stream.contentLength ? (stream.contentLength / (1024*1024)).toFixed(2) + ' MB' : 'Fast DL';
+                        let qualityName = index === 0 ? 'High Quality Audio' : 'Standard Audio';
+                        let ext = stream.format.toLowerCase();
+                        if(ext.includes('m4a')) ext = 'm4a';
+                        else ext = 'mp3';
+                        
+                        formattedData.push({
+                            resolution: qualityName,
+                            size: sizeMb,
+                            ext: ext,
+                            url: stream.url,
+                            type: 'audio'
+                        });
+                    });
+                }
+
+                if(formattedData.length === 0) {
+                    showToast('No public download formats found for this video.');
                     resetBtn();
                     return;
                 }
 
-                document.getElementById('vidTitle').innerText = data.title;
-                document.getElementById('vidThumb').src = data.thumbnail || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=600&q=80';
-                
-                renderFormats(data.formats);
+                renderFormats(formattedData);
                 resetBtn();
                 changeView('downloadView');
 
             } catch (err) {
-                showToast('Network error or Server is sleeping. Try again in 30s.');
+                showToast('Error: Invalid Link or Server is busy. Try again.');
                 resetBtn();
             }
         }
@@ -263,21 +316,21 @@
             let hasAudio = false;
 
             formats.forEach(f => {
-                const isAudioOnly = f.resolution === 'Audio Only' || f.vcodec === 'none';
+                const isAudioOnly = f.type === 'audio';
                 const container = isAudioOnly ? aContainer : vContainer;
                 
                 if(isAudioOnly) hasAudio = true;
                 else hasVideo = true;
 
-                const title = isAudioOnly ? 'Audio Quality' : `${f.resolution} Quality`;
+                const title = isAudioOnly ? f.resolution : `${f.resolution} Quality`;
                 const formatLabel = f.ext.toUpperCase();
-                const isLegacy = f.ext === '3gp' || f.resolution === '144p';
+                const isLegacy = f.ext === '3gp' || f.resolution.includes('144p');
                 const borderColor = isLegacy ? 'border-l-2 border-amber-500' : '';
                 const titleColor = isLegacy ? 'text-amber-500' : 'text-white';
                 const desc = isLegacy ? 'For Legacy Devices' : `${formatLabel} Format`;
 
                 const html = `
-                    <div onclick="addDownload('${title}', '${f.size}', '${isAudioOnly ? 'audio' : 'video'}', '${f.url}')" class="glass-box p-4 flex justify-between items-center cursor-pointer hover:bg-slate-700 smooth-trans mb-2 ${borderColor}">
+                    <div onclick="addDownload('${title}', '${f.size}', '${f.type}', '${f.url}')" class="glass-box p-4 flex justify-between items-center cursor-pointer hover:bg-slate-700 smooth-trans mb-2 ${borderColor}">
                         <div><p class="font-semibold ${titleColor}">${title}</p><p class="text-[10px] text-slate-400">${desc}</p></div>
                         <span class="text-sm text-emerald-400 font-semibold">${f.size}</span>
                     </div>
@@ -370,7 +423,6 @@
             const t = document.getElementById('toast');
             document.getElementById('toastMsg').innerText = msg;
             t.classList.remove('hide-section');
-            // Show longer for reading errors
             setTimeout(() => t.classList.add('hide-section'), 4500);
         }
     </script>
