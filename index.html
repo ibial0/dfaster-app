@@ -62,6 +62,7 @@
 
         <main class="flex-1 overflow-y-auto p-5 relative">
             
+            <!-- HOME VIEW -->
             <div id="homeView" class="app-section flex flex-col h-full justify-center pb-10">
                 <div class="text-center mb-8">
                     <i class="fas fa-bolt text-5xl text-emerald-500 mb-4 drop-shadow-lg"></i>
@@ -83,6 +84,7 @@
                 </button>
             </div>
 
+            <!-- DOWNLOAD OPTIONS VIEW -->
             <div id="downloadView" class="app-section hide-section pb-20">
                 <button onclick="changeView('homeView')" class="text-slate-400 hover:text-white mb-4 text-sm flex items-center">
                     <i class="fas fa-arrow-left mr-2"></i> Back to Home
@@ -94,7 +96,7 @@
                         <i class="fas fa-play-circle text-5xl text-white opacity-80 z-10 drop-shadow-lg"></i>
                     </div>
                     <h3 id="vidTitle" class="font-semibold text-slate-200 mb-1 leading-snug">Loading Title...</h3>
-                    <p class="text-xs text-emerald-400">Connection Secured</p>
+                    <p class="text-xs text-emerald-400">Direct Engine Connected</p>
                 </div>
 
                 <h4 class="text-emerald-400 font-semibold text-xs uppercase tracking-wider mb-3 ml-1">Video Formats</h4>
@@ -104,6 +106,7 @@
                 <div id="audioFormatsContainer" class="space-y-2"></div>
             </div>
 
+            <!-- DOWNLOADS QUEUE VIEW -->
             <div id="historyView" class="app-section hide-section pb-20">
                 <div class="flex justify-between items-center mb-6">
                     <h2 class="text-xl text-white font-semibold">Active Queue</h2>
@@ -117,16 +120,18 @@
                 </div>
             </div>
 
+            <!-- ABOUT VIEW -->
             <div id="aboutView" class="app-section hide-section pb-20">
                 <div class="text-center mb-8 mt-4">
                     <h1 class="text-3xl font-bold tracking-widest text-emerald-400 mb-2" style="font-family: Arial, sans-serif;">DFASTER</h1>
                     <p class="text-slate-400 text-xs">Premium Delivery System</p>
                 </div>
                 <div class="glass-box p-6 text-sm text-slate-300 leading-relaxed space-y-4">
-                    <p>DFASTER connects you directly to global media servers, ensuring maximum quality retention and complete legacy device support.</p>
+                    <p>DFASTER connects you directly to global media servers, ensuring maximum quality retention and complete stability.</p>
                 </div>
             </div>
 
+            <!-- SETTINGS VIEW -->
             <div id="settingsView" class="app-section hide-section pb-20">
                 <button onclick="changeView('homeView')" class="text-slate-400 hover:text-white mb-6 text-sm flex items-center">
                     <i class="fas fa-arrow-left mr-2"></i> Back
@@ -189,15 +194,6 @@
         let activeCount = 0;
         const LIMIT = 3;
 
-        // Auto-Failover Server Network (5 Most Reliable Instances)
-        const GLOBAL_SERVERS = [
-            "https://pipedapi.tokhmi.xyz",
-            "https://api.piped.projectsegfau.lt",
-            "https://pipedapi.smnz.de",
-            "https://piped-api.lunar.icu",
-            "https://pipedapi.kavin.rocks"
-        ];
-
         function changeView(viewId) {
             document.querySelectorAll('.app-section').forEach(el => el.classList.add('hide-section'));
             document.getElementById(viewId).classList.remove('hide-section');
@@ -223,160 +219,84 @@
             document.getElementById('loader').classList.add('hidden');
         }
 
-        function extractVideoId(url) {
-            let id = '';
-            try {
-                if (url.includes('youtu.be/')) {
-                    id = url.split('youtu.be/')[1].split('?')[0];
-                } else if (url.includes('watch?v=')) {
-                    id = url.split('watch?v=')[1].split('&')[0];
-                } else if (url.includes('shorts/')) {
-                    id = url.split('shorts/')[1].split('?')[0];
-                }
-            } catch(e){}
-            return id;
-        }
-
-        // Custom fetch with timeout to quickly skip dead servers
-        async function fetchWithTimeout(resource, options = {}) {
-            const { timeout = 6000 } = options; // 6 seconds wait per server
-            const controller = new AbortController();
-            const id = setTimeout(() => controller.abort(), timeout);
-            const response = await fetch(resource, { ...options, signal: controller.signal });
-            clearTimeout(id);
-            return response;
-        }
-
         async function fetchMetadata() {
             const link = document.getElementById('videoLink').value;
             if(!link) { showToast('Please paste a link'); return; }
 
-            const videoId = extractVideoId(link);
-            if(!videoId) { showToast('Invalid Format. Use direct YouTube link'); return; }
+            let videoId = '';
+            try {
+                if (link.includes('youtu.be/')) videoId = link.split('youtu.be/')[1].split('?')[0];
+                else if (link.includes('watch?v=')) videoId = link.split('watch?v=')[1].split('&')[0];
+                else if (link.includes('shorts/')) videoId = link.split('shorts/')[1].split('?')[0];
+            } catch(e){}
 
-            document.getElementById('btnText').innerText = 'Scanning Secure Servers...';
+            if(!videoId) { showToast('Invalid Format. Use a direct YouTube link'); return; }
+
+            const standardUrl = `https://www.youtube.com/watch?v=${videoId}`;
+
+            document.getElementById('btnText').innerText = 'Extracting Metadata...';
             document.getElementById('btnIcon').classList.add('hidden');
             document.getElementById('loader').classList.remove('hidden');
 
-            let data = null;
-            let success = false;
-
-            // Loop through our 5 global servers. If one is busy, switch to the next instantly.
-            for (let server of GLOBAL_SERVERS) {
-                try {
-                    const apiUrl = `${server}/streams/${videoId}`;
-                    const response = await fetchWithTimeout(apiUrl);
-                    
-                    if(response.ok) {
-                        data = await response.json();
-                        if(data && (data.videoStreams || data.audioStreams)) {
-                            success = true;
-                            console.log("Successfully connected to:", server);
-                            break; // Stop looping, we found a working server!
-                        }
-                    }
-                } catch (err) {
-                    console.log(server + " is busy. Switching to next...");
-                }
-            }
-
-            if (!success) {
-                showToast('All global networks are currently maxed out. Try again in 30 seconds.');
-                resetBtn();
-                return;
-            }
-
             try {
-                // If we got here, we have the real data
-                document.getElementById('vidTitle').innerText = data.title;
-                document.getElementById('vidThumb').src = data.thumbnailUrl || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=600&q=80';
-                
-                let formattedData = [];
+                // Instant Metadata Fetch (100% Reliable Noembed API)
+                const res = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(standardUrl)}`);
+                const data = await res.json();
 
-                if(data.videoStreams && data.videoStreams.length > 0) {
-                    data.videoStreams.forEach(stream => {
-                        if(!stream.videoOnly) {
-                            let sizeMb = stream.contentLength ? (stream.contentLength / (1024*1024)).toFixed(2) + ' MB' : 'Fast DL';
-                            let ext = stream.format.toLowerCase();
-                            if(ext.includes('mpeg_4') || ext.includes('mp4')) ext = 'mp4';
-                            if(ext.includes('3gpp')) ext = '3gp';
-                            
-                            formattedData.push({
-                                resolution: stream.quality,
-                                size: sizeMb,
-                                ext: ext,
-                                url: stream.url,
-                                type: 'video'
-                            });
-                        }
-                    });
-                }
+                if(data.error) throw new Error('Video not found');
 
-                if(data.audioStreams && data.audioStreams.length > 0) {
-                    data.audioStreams.forEach((stream, index) => {
-                        let sizeMb = stream.contentLength ? (stream.contentLength / (1024*1024)).toFixed(2) + ' MB' : 'Fast DL';
-                        let qualityName = index === 0 ? 'High Quality Audio' : 'Standard Audio';
-                        let ext = stream.format.toLowerCase();
-                        if(ext.includes('m4a')) ext = 'm4a';
-                        else ext = 'mp3';
-                        
-                        formattedData.push({
-                            resolution: qualityName,
-                            size: sizeMb,
-                            ext: ext,
-                            url: stream.url,
-                            type: 'audio'
-                        });
-                    });
-                }
+                document.getElementById('vidTitle').innerText = data.title || 'YouTube Media';
+                document.getElementById('vidThumb').src = data.thumbnail_url || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?auto=format&fit=crop&w=600&q=80';
 
-                renderFormats(formattedData);
+                // Core Engine Formats
+                const stableFormats = [
+                    { title: '1080p FHD Quality', osCode: '1080', type: 'video' },
+                    { title: '720p HD Quality', osCode: '720', type: 'video' },
+                    { title: '360p SD Quality', osCode: '360', type: 'video' }
+                ];
+
+                const audioFormats = [
+                    { title: 'High Quality Audio', osCode: 'mp3', type: 'audio' }
+                ];
+
+                renderFormats(stableFormats, audioFormats, standardUrl);
                 resetBtn();
                 changeView('downloadView');
 
             } catch (err) {
-                showToast('Format parsing error. Try another video.');
+                showToast('Unable to process this specific link.');
                 resetBtn();
             }
         }
 
-        function renderFormats(formats) {
+        function renderFormats(vFormats, aFormats, rawUrl) {
             const vContainer = document.getElementById('videoFormatsContainer');
             const aContainer = document.getElementById('audioFormatsContainer');
             vContainer.innerHTML = '';
             aContainer.innerHTML = '';
 
-            let hasVideo = false;
-            let hasAudio = false;
-
-            formats.forEach(f => {
-                const isAudioOnly = f.type === 'audio';
-                const container = isAudioOnly ? aContainer : vContainer;
-                
-                if(isAudioOnly) hasAudio = true;
-                else hasVideo = true;
-
-                const title = isAudioOnly ? f.resolution : `${f.resolution} Quality`;
-                const formatLabel = f.ext.toUpperCase();
-                const isLegacy = f.ext === '3gp' || f.resolution.includes('144p');
-                const borderColor = isLegacy ? 'border-l-2 border-amber-500' : '';
-                const titleColor = isLegacy ? 'text-amber-500' : 'text-white';
-                const desc = isLegacy ? 'Legacy Protocol' : `${formatLabel} System`;
-
+            vFormats.forEach(f => {
                 const html = `
-                    <div onclick="addDownload('${title}', '${f.size}', '${f.type}', '${f.url}')" class="glass-box p-4 flex justify-between items-center cursor-pointer hover:bg-slate-700 smooth-trans mb-2 ${borderColor}">
-                        <div><p class="font-semibold ${titleColor}">${title}</p><p class="text-[10px] text-slate-400">${desc}</p></div>
-                        <span class="text-sm text-emerald-400 font-semibold">${f.size}</span>
+                    <div onclick="addDownload('${f.title}', '${f.osCode}', '${f.type}', '${rawUrl}')" class="glass-box p-4 flex justify-between items-center cursor-pointer hover:bg-slate-700 smooth-trans mb-2">
+                        <div><p class="font-semibold text-white">${f.title}</p><p class="text-[10px] text-slate-400">MP4 Format Engine</p></div>
+                        <span class="text-sm text-emerald-400 font-semibold"><i class="fas fa-download"></i></span>
                     </div>
                 `;
-                container.innerHTML += html;
+                vContainer.innerHTML += html;
             });
 
-            if(!hasVideo) vContainer.innerHTML = '<p class="text-xs text-slate-500">Video formats hidden by provider</p>';
-            if(!hasAudio) aContainer.innerHTML = '<p class="text-xs text-slate-500">Audio formats hidden by provider</p>';
+            aFormats.forEach(f => {
+                const html = `
+                    <div onclick="addDownload('${f.title}', '${f.osCode}', '${f.type}', '${rawUrl}')" class="glass-box p-4 flex justify-between items-center cursor-pointer hover:bg-slate-700 smooth-trans mb-2 border-l-2 border-blue-500">
+                        <div><p class="font-semibold text-blue-400">${f.title}</p><p class="text-[10px] text-slate-400">MP3 Format Engine</p></div>
+                        <span class="text-sm text-blue-400 font-semibold"><i class="fas fa-music"></i></span>
+                    </div>
+                `;
+                aContainer.innerHTML += html;
+            });
         }
 
-        function addDownload(name, size, type, url) {
+        function addDownload(name, osCode, type, url) {
             const list = document.getElementById('downloadList');
             const empty = document.getElementById('emptyMsg');
             if(empty) empty.style.display = 'none';
@@ -387,17 +307,17 @@
             const isWaiting = activeCount >= LIMIT;
             if(!isWaiting) activeCount++;
 
-            const statusText = isWaiting ? 'Queued' : 'Downloading';
+            const statusText = isWaiting ? 'Queued' : 'Starting...';
             const statusColor = isWaiting ? 'text-amber-500' : 'text-emerald-400';
             const icon = isWaiting ? 'fa-clock' : 'fa-circle-notch fa-spin';
             const id = 'dl-' + Date.now();
 
             const html = `
-                <div id="${id}" class="glass-box p-4 border-l-4 ${isWaiting ? 'border-amber-500' : 'border-emerald-500'}">
+                <div id="${id}" class="glass-box p-4 border-l-4 ${isWaiting ? 'border-amber-500' : 'border-emerald-500'}" data-os="${osCode}" data-url="${url}">
                     <div class="flex justify-between items-center">
                         <div class="flex items-center">
                             <i class="${type === 'video' ? 'fas fa-video' : 'fas fa-music'} text-slate-400 mr-3"></i>
-                            <div><p class="text-xs font-bold text-white">${name}</p><p class="text-[10px] text-slate-500">${size}</p></div>
+                            <div><p class="text-xs font-bold text-white">${name}</p></div>
                         </div>
                         <div class="text-right">
                             <p class="text-[10px] ${statusColor} font-bold flex items-center uppercase tracking-tighter status-text">
@@ -405,31 +325,70 @@
                             </p>
                         </div>
                     </div>
-                    <a href="${url}" target="_blank" rel="noopener noreferrer" class="hidden real-link"></a>
                 </div>
             `;
             list.innerHTML = html + list.innerHTML;
-            showToast(isWaiting ? 'Saved to Queue' : 'Download Initiated');
+            showToast(isWaiting ? 'Saved to Queue' : 'Engine Started');
             
-            if(!isWaiting) startProcess(id);
+            if(!isWaiting) startProcess(id, osCode, url);
         }
 
-        function startProcess(id) {
+        // Mastermind Backend Bypass Engine
+        async function startProcess(id, osCode, url) {
             const el = document.getElementById(id);
-            if(el) {
-                setTimeout(() => {
-                    const realLink = el.querySelector('.real-link');
-                    if(realLink && realLink.href && realLink.href !== "undefined") {
-                        window.open(realLink.href, '_blank');
+            if(!el) return;
+            const statusLabel = el.querySelector('.status-label');
+            const statusIcon = el.querySelector('.status-icon');
+            const statusTextContainer = el.querySelector('.status-text');
+
+            try {
+                // Send Request to Master Server
+                const initRes = await fetch(`https://p.oceansaver.in/ajax/download.php?format=${osCode}&url=${encodeURIComponent(url)}&api=dfcb6d76f2f6a9894gjkege8a4ab232222`);
+                const initData = await initRes.json();
+
+                if (!initData.success) throw new Error("Init fail");
+
+                const dlId = initData.id;
+                statusLabel.innerText = 'Converting 0%';
+
+                // Live Polling System
+                const checkProgress = setInterval(async () => {
+                    try {
+                        const progRes = await fetch(`https://p.oceansaver.in/ajax/progress.php?id=${dlId}`);
+                        const progData = await progRes.json();
+
+                        if (progData.success && progData.progress === 1000) {
+                            clearInterval(checkProgress);
+                            
+                            statusIcon.className = 'fas fa-check-circle mr-1';
+                            statusLabel.innerText = 'Completed';
+                            el.classList.replace('border-emerald-500', 'border-slate-700');
+                            statusTextContainer.classList.replace('text-emerald-400', 'text-slate-500');
+
+                            // Start actual download instantly
+                            window.location.href = progData.download_url;
+                            
+                            activeCount--;
+                            checkQueue();
+                        } else if (progData.success) {
+                            let percent = Math.floor(progData.progress / 10);
+                            statusLabel.innerText = `Converting ${percent}%`;
+                        } else {
+                            throw new Error("API fail");
+                        }
+                    } catch(e) {
+                        clearInterval(checkProgress);
+                        throw e;
                     }
-                    
-                    el.querySelector('.status-icon').className = 'fas fa-check-circle mr-1';
-                    el.querySelector('.status-label').innerText = 'Completed';
-                    el.classList.replace('border-emerald-500', 'border-slate-700');
-                    el.querySelector('.status-text')?.classList.replace('text-emerald-400', 'text-slate-500');
-                    activeCount--;
-                    checkQueue();
-                }, 1500); 
+                }, 3000);
+
+            } catch (err) {
+                statusIcon.className = 'fas fa-exclamation-triangle mr-1 text-red-500';
+                statusLabel.innerText = 'Failed';
+                statusTextContainer.classList.replace('text-emerald-400', 'text-red-500');
+                el.classList.replace('border-emerald-500', 'border-red-500');
+                activeCount--;
+                checkQueue();
             }
         }
 
@@ -439,10 +398,13 @@
             for(let i = labels.length-1; i>=0; i--) {
                 if(labels[i].innerText === 'Queued') {
                     activeCount++;
-                    labels[i].innerText = 'Downloading';
-                    labels[i].closest('.status-text').classList.replace('text-amber-500', 'text-emerald-400');
+                    labels[i].innerText = 'Starting...';
+                    let container = labels[i].closest('.status-text');
+                    container.classList.replace('text-amber-500', 'text-emerald-400');
                     labels[i].previousElementSibling.className = 'fas fa-circle-notch fa-spin mr-1';
-                    startProcess(labels[i].closest('.glass-box').id);
+                    
+                    let box = labels[i].closest('.glass-box');
+                    startProcess(box.id, box.getAttribute('data-os'), box.getAttribute('data-url'));
                     break;
                 }
             }
