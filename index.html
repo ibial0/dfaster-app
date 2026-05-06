@@ -4,16 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>DFASTER - Video Downloader</title>
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" id="manifestLink" href="#">
     <meta name="theme-color" content="#0f172a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="DFASTER">
     <meta name="description" content="DFASTER - Fastest YouTube video downloader. All qualities, all formats.">
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <style>
-        /* ===== RESET & BASE ===== */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
         :root {
@@ -35,7 +35,6 @@
             color: #e2e8f0;
         }
 
-        /* ===== UTILITY CLASSES (replacing Tailwind) ===== */
         .flex { display: flex; }
         .inline-flex { display: inline-flex; }
         .flex-1 { flex: 1 1 0%; }
@@ -106,7 +105,6 @@
 
         .opacity-20 { opacity: 0.2; }
 
-        /* Colors */
         .text-white { color: #ffffff; }
         .text-slate-200 { color: #e2e8f0; }
         .text-slate-300 { color: #cbd5e1; }
@@ -120,18 +118,15 @@
         .bg-emerald-600 { background-color: #059669; }
         .bg-emerald-900 { background-color: #064e3b; }
 
-        /* Space-y */
         .space-y-2 > * + * { margin-top: 8px; }
         .space-y-3 > * + * { margin-top: 12px; }
         .space-y-4 > * + * { margin-top: 16px; }
 
-        /* Hover */
         .hover-emerald:hover { color: var(--emerald-bright); }
         .hover-red:hover { color: #f87171; }
         .hover-slate:hover { color: #cbd5e1; }
         .hover-emerald-bg:hover { background-color: #065f46; }
 
-        /* ===== APP LAYOUT ===== */
         .app-container {
             width: 100%; height: 100%;
             max-width: 28rem;
@@ -154,7 +149,6 @@
             .app-container { border-left: 1px solid rgba(16,185,129,0.1); border-right: 1px solid rgba(16,185,129,0.1); }
         }
 
-        /* ===== GLASS BOX ===== */
         .glass-box {
             background: var(--bg-glass);
             backdrop-filter: blur(16px);
@@ -165,7 +159,6 @@
         .smooth { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
         .hide { display: none !important; }
 
-        /* ===== HEADER ===== */
         .app-header {
             flex-shrink: 0;
             display: flex; justify-content: space-between; align-items: center;
@@ -189,7 +182,6 @@
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
 
-        /* ===== INPUT ===== */
         .input-wrap {
             display: flex; align-items: center;
             background: rgba(15, 31, 53, 0.9);
@@ -208,7 +200,6 @@
         }
         input::placeholder { color: #334155; }
 
-        /* ===== BUTTONS ===== */
         .btn-primary {
             width: 100%;
             background: linear-gradient(135deg, #059669, #10b981);
@@ -241,7 +232,6 @@
         .back-btn:hover { color: var(--emerald-bright); }
         .back-btn i { font-size: 12px; }
 
-        /* ===== FORMAT CARDS ===== */
         .format-card {
             display: flex; justify-content: space-between; align-items: center;
             padding: 13px 16px;
@@ -256,7 +246,6 @@
         .format-card.audio-card { border-left: 3px solid #6366f1; }
         .format-card.video-only-card { border-left: 3px solid #64748b; }
 
-        /* ===== QUALITY BADGES ===== */
         .quality-badge {
             font-size: 10px; font-weight: 700;
             padding: 2px 7px; border-radius: 6px;
@@ -267,7 +256,6 @@
         .badge-sd { background: rgba(100,116,139,0.15); color: #94a3b8; border: 1px solid rgba(100,116,139,0.2); }
         .badge-audio { background: rgba(99,102,241,0.1); color: #818cf8; border: 1px solid rgba(99,102,241,0.2); }
 
-        /* ===== MODAL ===== */
         .modal-overlay {
             position: fixed; inset: 0;
             background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
@@ -291,7 +279,6 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-        /* ===== TOAST ===== */
         .toast {
             position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
             background: rgba(15, 31, 53, 0.97);
@@ -305,12 +292,10 @@
         }
         @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(10px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 
-        /* ===== SCROLLBAR ===== */
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #1e3a5f; border-radius: 10px; }
 
-        /* ===== NAV ===== */
         nav { flex-shrink: 0; }
         .nav-bar {
             display: flex;
@@ -331,7 +316,6 @@
         .nav-btn:hover:not(.active) { color: #64748b; }
         .nav-btn span { font-size: 9px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
 
-        /* ===== SECTION LABEL ===== */
         .section-label {
             font-size: 10px; font-weight: 700; letter-spacing: 2px;
             text-transform: uppercase; color: var(--emerald);
@@ -339,7 +323,6 @@
             display: flex; align-items: center; gap: 6px;
         }
 
-        /* ===== THUMBNAIL ===== */
         .thumb-wrap {
             width: 100%; aspect-ratio: 16/9;
             background: #0a1628; border-radius: 12px;
@@ -352,11 +335,9 @@
             display: flex; align-items: center; justify-content: center;
         }
 
-        /* ===== SPINNER ===== */
         @keyframes spin { to { transform: rotate(360deg); } }
         .spin { animation: spin 0.8s linear infinite; display: inline-block; }
 
-        /* ===== TOGGLE GROUP ===== */
         .toggle-group {
             display: flex; background: rgba(15, 31, 53, 0.8);
             border: 1px solid var(--border); border-radius: 10px; overflow: hidden;
@@ -372,7 +353,6 @@
             color: white;
         }
 
-        /* ===== INSTALL BANNER ===== */
         .install-banner {
             background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(99,102,241,0.1));
             border: 1px solid rgba(16,185,129,0.25);
@@ -387,14 +367,12 @@
             flex-shrink: 0; color: white; font-size: 14px;
         }
 
-        /* ===== SETTINGS ROW ===== */
         .settings-row {
             display: flex; justify-content: space-between;
             font-size: 12px; color: #94a3b8; padding: 3px 0;
         }
         .settings-row span:last-child { color: #e2e8f0; font-family: 'Space Mono', monospace; font-size: 11px; }
 
-        /* ===== HOME HERO ICON ===== */
         .hero-icon-wrap {
             width: 64px; height: 64px; border-radius: 18px;
             display: flex; align-items: center; justify-content: center;
@@ -403,7 +381,6 @@
             margin: 0 auto 16px;
         }
 
-        /* ===== ERROR BOX ===== */
         .error-box {
             background: rgba(239,68,68,0.08);
             border: 1px solid rgba(239,68,68,0.2);
@@ -411,6 +388,14 @@
             margin-top: 12px; display: none;
         }
         .error-box.show { display: block; }
+
+        /* Server status indicator */
+        .server-status {
+            font-size: 10px; color: #64748b;
+            text-align: center; margin-top: 8px;
+        }
+        .server-status.trying { color: #fbbf24; }
+        .server-status.ok { color: #34d399; }
     </style>
 </head>
 <body style="display:flex; align-items:center; justify-content:center;">
@@ -443,7 +428,7 @@
                 <div class="install-icon"><i class="fa-solid fa-mobile-screen"></i></div>
                 <div class="flex-1">
                     <p class="text-10 font-bold text-emerald-400">Install DFASTER App</p>
-                    <p class="text-9 text-slate-400" style="margin-top:2px;">Add to home screen — share from YouTube directly</p>
+                    <p class="text-9 text-slate-400" style="margin-top:2px;">Add to home screen and share from YouTube directly</p>
                 </div>
                 <i class="fa-solid fa-plus text-emerald-400" style="font-size:14px;"></i>
             </div>
@@ -453,12 +438,6 @@
                 <div class="hero-icon-wrap">
                     <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
                         <path d="M16 4L6 18H13.5L13 28L24 14H16.5L16 4Z" fill="#10b981"/>
-                        <defs>
-                            <linearGradient id="logoGrad" x1="6" y1="4" x2="24" y2="28">
-                                <stop offset="0%" stop-color="#34d399"/>
-                                <stop offset="100%" stop-color="#059669"/>
-                            </linearGradient>
-                        </defs>
                     </svg>
                 </div>
                 <h2 class="text-lg font-bold text-slate-200 mb-1">Download Any Video</h2>
@@ -478,26 +457,28 @@
                 </button>
             </div>
 
-            <button id="fetchBtn" onclick="fetchMetadata()" class="btn-primary mb-4">
+            <button id="fetchBtn" onclick="fetchMetadata()" class="btn-primary mb-2">
                 <span id="btnText">Find Video</span>
                 <i id="btnIcon" class="fa-solid fa-magnifying-glass"></i>
                 <i id="loader" class="fa-solid fa-spinner spin hide"></i>
             </button>
 
+            <p id="serverStatus" class="server-status"></p>
+
             <!-- Error box -->
             <div class="error-box" id="errorBox">
                 <p style="font-size:12px; font-weight:700; color:#f87171; margin-bottom:6px;">
-                    <i class="fa-solid fa-triangle-exclamation" style="margin-right:6px;"></i>Failed to fetch video
+                    <i class="fa-solid fa-triangle-exclamation" style="margin-right:6px;"></i>Could not fetch video
                 </p>
                 <p style="font-size:11px; color:#94a3b8; line-height:1.6;" id="errorDetail">All servers failed to respond.</p>
-                <p style="font-size:11px; color:#64748b; margin-top:8px;">Try again in a few seconds — Piped servers may be temporarily busy.</p>
+                <p style="font-size:11px; color:#64748b; margin-top:8px;">Please wait a few seconds and try again. If the problem continues, the video may be private or region-restricted.</p>
             </div>
 
             <!-- Format info -->
-            <div class="glass-box p-4 mt-2">
+            <div class="glass-box p-4 mt-4">
                 <p class="text-10 text-slate-500 font-bold uppercase tracking-widest mb-3">Supported Formats</p>
                 <div class="flex flex-wrap gap-2">
-                    <span class="quality-badge badge-4k">4K · 2160p</span>
+                    <span class="quality-badge badge-4k">4K 2160p</span>
                     <span class="quality-badge badge-hd">1080p HD</span>
                     <span class="quality-badge badge-hd">720p HD</span>
                     <span class="quality-badge badge-sd">480p SD</span>
@@ -599,20 +580,20 @@
 
                 <div class="glass-box p-5">
                     <p class="text-emerald-400 font-semibold text-xs uppercase tracking-widest mb-1">Android Share Integration</p>
-                    <p class="text-11 text-slate-500 mb-4">Install DFASTER as a PWA to appear in YouTube's share sheet</p>
+                    <p class="text-11 text-slate-500 mb-4">Install DFASTER as a PWA to appear in YouTube share sheet</p>
                     <button onclick="triggerInstall()" class="btn-primary" style="padding: 11px;">
                         <i class="fa-solid fa-mobile-screen-button"></i>
                         Install App
                     </button>
-                    <p class="text-10 text-slate-600 mt-3 text-center">After installing: Open YouTube → Share → Select DFASTER</p>
+                    <p class="text-10 text-slate-600 mt-3 text-center">After installing: Open YouTube, tap Share, then select DFASTER</p>
                 </div>
 
                 <div class="glass-box p-5">
                     <p class="text-emerald-400 font-semibold text-xs uppercase tracking-widest mb-3">About</p>
                     <div class="space-y-2">
-                        <div class="settings-row"><span>Version</span><span class="text-emerald-400">2.0.0</span></div>
-                        <div class="settings-row"><span>Engine</span><span>Server Racing (8 APIs)</span></div>
-                        <div class="settings-row"><span>Backend</span><span>None — Client only</span></div>
+                        <div class="settings-row"><span>Version</span><span class="text-emerald-400">2.1.0</span></div>
+                        <div class="settings-row"><span>Engine</span><span>Server Racing (multi-API)</span></div>
+                        <div class="settings-row"><span>Backend</span><span>None - Client only</span></div>
                     </div>
                 </div>
 
@@ -633,9 +614,9 @@
                 <p class="text-slate-500 text-xs mt-1">Direct Media System</p>
             </div>
             <div class="glass-box p-5 text-sm text-slate-400 leading-relaxed space-y-3">
-                <p>DFASTER uses a <strong class="text-emerald-400">Server Racing</strong> technique — it simultaneously queries multiple Piped API servers worldwide and uses whichever responds first.</p>
+                <p>DFASTER uses a <strong class="text-emerald-400">Server Racing</strong> technique. It simultaneously queries multiple Piped and Invidious API servers worldwide and uses whichever responds first.</p>
                 <p>All streams are original YouTube quality. No compression, no re-encoding. You get exactly what YouTube provides.</p>
-                <p>This app runs entirely in your browser — no backend server, no data collection, no tracking.</p>
+                <p>This app runs entirely in your browser. No backend server, no data collection, no tracking.</p>
             </div>
         </div>
 
@@ -667,7 +648,7 @@
     <div class="modal-sheet" id="dlModalSheet">
         <div class="modal-handle"></div>
         <h3 class="font-bold text-slate-200 text-base mb-1" id="dlModalTitle">1080p HD Quality</h3>
-        <p class="text-xs text-slate-500 mb-5" id="dlModalMeta">MP4 • ~45 MB</p>
+        <p class="text-xs text-slate-500 mb-5" id="dlModalMeta">MP4 - about 45 MB</p>
 
         <button id="dlBtnDirect" onclick="downloadDirect()" class="btn-primary mb-3">
             <i class="fa-solid fa-download"></i>
@@ -684,8 +665,8 @@
                 <i class="fa-solid fa-lightbulb" style="color:#fbbf24;margin-right:4px;"></i>Download Tips
             </p>
             <p class="text-11 text-slate-400 leading-relaxed">
-                <strong class="text-slate-300">Android Chrome:</strong> Tap Download → video opens → tap ⋮ → <em>Download</em><br>
-                <strong class="text-slate-300">Desktop:</strong> Right-click opened video → <em>Save video as</em><br>
+                <strong class="text-slate-300">Android Chrome:</strong> Tap Download, the video will open, then tap the 3-dot menu and select Download.<br>
+                <strong class="text-slate-300">Desktop:</strong> Right-click the opened video and choose Save video as.<br>
                 Or use <strong class="text-slate-300">Copy Link</strong> and paste into your download manager app.
             </p>
         </div>
@@ -702,7 +683,9 @@
 
 <script>
 // ============================================================
-// PIPED API SERVERS — Updated list
+// API SERVERS
+// Piped servers (returns: videoStreams, audioStreams)
+// Invidious servers (returns: adaptiveFormats, formatStreams)
 // ============================================================
 const PIPED_SERVERS = [
     "https://pipedapi.kavin.rocks",
@@ -710,12 +693,24 @@ const PIPED_SERVERS = [
     "https://api.piped.projectsegfau.lt",
     "https://pipedapi.smnz.de",
     "https://piped-api.lunar.icu",
-    "https://piped.syncpundit.io/api",
     "https://pipedapi.ngn.tf",
     "https://piped-api.hostux.net",
     "https://pipedapi.r4fo.com",
     "https://piped.adminforge.de/api",
     "https://api.piped.yt",
+    "https://pipedapi.in.projectsegfau.lt",
+    "https://pipedapi.colinslegacy.com",
+];
+
+const INVIDIOUS_SERVERS = [
+    "https://invidious.io.lol/api/v1",
+    "https://yt.cdaut.de/api/v1",
+    "https://invidious.nerdvpn.de/api/v1",
+    "https://iv.datura.network/api/v1",
+    "https://invidious.fdn.fr/api/v1",
+    "https://invidious.privacydev.net/api/v1",
+    "https://vid.puffyan.us/api/v1",
+    "https://invidious.tiekoetter.com/api/v1",
 ];
 
 // ============================================================
@@ -725,9 +720,124 @@ let currentStreamUrl = '';
 let currentFilename = '';
 let queueCount = 0;
 let deferredInstallPrompt = null;
+let appIconDataUrl = '';
 
 // ============================================================
-// PWA
+// PWA ICON GENERATION
+// Generates icon at runtime using Canvas and injects into manifest
+// ============================================================
+function generateAppIcon(size) {
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+
+    // Background gradient
+    const bg = ctx.createLinearGradient(0, 0, size, size);
+    bg.addColorStop(0, '#0a1628');
+    bg.addColorStop(1, '#051020');
+    ctx.fillStyle = bg;
+
+    // Rounded rect background
+    const r = size * 0.18;
+    ctx.beginPath();
+    ctx.moveTo(r, 0);
+    ctx.lineTo(size - r, 0);
+    ctx.quadraticCurveTo(size, 0, size, r);
+    ctx.lineTo(size, size - r);
+    ctx.quadraticCurveTo(size, size, size - r, size);
+    ctx.lineTo(r, size);
+    ctx.quadraticCurveTo(0, size, 0, size - r);
+    ctx.lineTo(0, r);
+    ctx.quadraticCurveTo(0, 0, r, 0);
+    ctx.closePath();
+    ctx.fill();
+
+    // Green glow circle
+    const glow = ctx.createRadialGradient(size * 0.5, size * 0.42, 0, size * 0.5, size * 0.42, size * 0.45);
+    glow.addColorStop(0, 'rgba(16,185,129,0.18)');
+    glow.addColorStop(1, 'rgba(16,185,129,0)');
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(size * 0.5, size * 0.42, size * 0.45, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Lightning bolt - scaled to icon size
+    const s = size / 100;
+    ctx.save();
+    const boltGrad = ctx.createLinearGradient(30 * s, 10 * s, 70 * s, 90 * s);
+    boltGrad.addColorStop(0, '#34d399');
+    boltGrad.addColorStop(1, '#059669');
+    ctx.fillStyle = boltGrad;
+    ctx.shadowColor = '#10b981';
+    ctx.shadowBlur = 12 * s;
+    ctx.beginPath();
+    ctx.moveTo(58 * s, 10 * s);
+    ctx.lineTo(28 * s, 52 * s);
+    ctx.lineTo(46 * s, 52 * s);
+    ctx.lineTo(42 * s, 90 * s);
+    ctx.lineTo(72 * s, 48 * s);
+    ctx.lineTo(54 * s, 48 * s);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+
+    return canvas.toDataURL('image/png');
+}
+
+function setupPWA() {
+    // Generate icons
+    const icon192 = generateAppIcon(192);
+    const icon512 = generateAppIcon(512);
+    appIconDataUrl = icon192;
+
+    // Apple touch icon (for iOS and some Android browsers)
+    const appleIcon = document.createElement('link');
+    appleIcon.rel = 'apple-touch-icon';
+    appleIcon.href = icon512;
+    document.head.appendChild(appleIcon);
+
+    // Also set sizes variant
+    const appleIcon192 = document.createElement('link');
+    appleIcon192.rel = 'apple-touch-icon';
+    appleIcon192.setAttribute('sizes', '192x192');
+    appleIcon192.href = icon192;
+    document.head.appendChild(appleIcon192);
+
+    // Inject dynamic manifest with embedded icon
+    const manifest = {
+        name: 'DFASTER Video Downloader',
+        short_name: 'DFASTER',
+        description: 'Fast YouTube video downloader. All qualities, all formats.',
+        start_url: './',
+        scope: './',
+        display: 'standalone',
+        background_color: '#060d1a',
+        theme_color: '#0f172a',
+        orientation: 'portrait-primary',
+        icons: [
+            { src: icon192, sizes: '192x192', type: 'image/png', purpose: 'any' },
+            { src: icon192, sizes: '192x192', type: 'image/png', purpose: 'maskable' },
+            { src: icon512, sizes: '512x512', type: 'image/png', purpose: 'any' },
+            { src: icon512, sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+        ],
+        share_target: {
+            action: './',
+            method: 'GET',
+            params: { url: 'url', text: 'text', title: 'title' }
+        }
+    };
+
+    const blob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+    const manifestUrl = URL.createObjectURL(blob);
+
+    // Replace existing manifest link
+    const existing = document.getElementById('manifestLink');
+    if (existing) existing.href = manifestUrl;
+}
+
+// ============================================================
+// PWA INSTALL
 // ============================================================
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
@@ -739,16 +849,17 @@ function triggerInstall() {
     if (deferredInstallPrompt) {
         deferredInstallPrompt.prompt();
         deferredInstallPrompt.userChoice.then(choice => {
-            if (choice.outcome === 'accepted') showToast('App installed! Check home screen');
+            if (choice.outcome === 'accepted') showToast('App installed! Check your home screen');
             deferredInstallPrompt = null;
             document.getElementById('installBanner').classList.add('hide');
         });
     } else {
-        showToast('Open browser menu → "Add to Home Screen"');
+        showToast('Open browser menu and tap "Add to Home Screen"');
     }
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+    setupPWA();
     loadSettings();
     const params = new URLSearchParams(window.location.search);
     const shared = params.get('url') || params.get('text') || params.get('title') || '';
@@ -824,13 +935,13 @@ function extractVideoId(url) {
 }
 
 // ============================================================
-// FETCH — SERVER RACING
+// FETCH HELPERS
 // ============================================================
-async function fetchWithTimeout(url, ms = 10000) {
+async function fetchWithTimeout(url, ms = 6000) {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), ms);
     try {
-        const r = await fetch(url, { signal: ctrl.signal });
+        const r = await fetch(url, { signal: ctrl.signal, mode: 'cors' });
         clearTimeout(timer);
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r;
@@ -840,16 +951,83 @@ async function fetchWithTimeout(url, ms = 10000) {
     }
 }
 
+// Convert Invidious API response to Piped-compatible format
+function normalizeInvidious(data, videoId) {
+    const result = {
+        title: data.title || 'Unknown Title',
+        thumbnailUrl: null,
+        duration: data.lengthSeconds || 0,
+        videoStreams: [],
+        audioStreams: [],
+    };
+
+    // Thumbnails
+    if (data.videoThumbnails && data.videoThumbnails.length > 0) {
+        const hq = data.videoThumbnails.find(t => t.quality === 'maxres' || t.quality === 'high');
+        result.thumbnailUrl = hq ? hq.url : data.videoThumbnails[0].url;
+    }
+    if (!result.thumbnailUrl) {
+        result.thumbnailUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+    }
+
+    // Adaptive formats (video-only and audio-only DASH)
+    if (data.adaptiveFormats) {
+        data.adaptiveFormats.forEach(f => {
+            if (!f.url) return;
+            const type = (f.type || '').toLowerCase();
+            if (type.startsWith('video/')) {
+                result.videoStreams.push({
+                    quality: f.qualityLabel || f.quality || 'Unknown',
+                    url: f.url,
+                    videoOnly: true,
+                    format: f.type,
+                    contentLength: f.clen || 0,
+                    fps: f.fps || null,
+                });
+            } else if (type.startsWith('audio/')) {
+                const br = f.bitrate ? Math.round(parseInt(f.bitrate) / 1000) + 'kbps' : (f.quality || '128kbps');
+                result.audioStreams.push({
+                    quality: br,
+                    url: f.url,
+                    format: f.type,
+                    contentLength: f.clen || 0,
+                });
+            }
+        });
+    }
+
+    // Format streams (muxed video+audio)
+    if (data.formatStreams) {
+        data.formatStreams.forEach(f => {
+            if (!f.url) return;
+            result.videoStreams.push({
+                quality: f.qualityLabel || f.quality || 'Unknown',
+                url: f.url,
+                videoOnly: false,
+                format: f.type,
+                fps: f.fps || null,
+            });
+        });
+    }
+
+    return result;
+}
+
+// ============================================================
+// MAIN FETCH - SERVER RACING (Piped + Invidious combined)
+// ============================================================
 async function fetchMetadata() {
     const rawUrl = document.getElementById('videoLink').value.trim();
     const errorBox = document.getElementById('errorBox');
+    const statusEl = document.getElementById('serverStatus');
     errorBox.classList.remove('show');
+    statusEl.textContent = '';
 
     if (!rawUrl) { showToast('Please paste a YouTube link first'); return; }
 
     const videoId = extractVideoId(rawUrl);
     if (!videoId) {
-        showToast('Invalid link — try youtube.com/watch?v=... or youtu.be/...');
+        showToast('Invalid link. Try youtube.com/watch?v=... or youtu.be/...');
         return;
     }
 
@@ -859,26 +1037,44 @@ async function fetchMetadata() {
     document.getElementById('btnText').textContent = 'Searching...';
     document.getElementById('btnIcon').classList.add('hide');
     document.getElementById('loader').classList.remove('hide');
+    statusEl.className = 'server-status trying';
+    statusEl.textContent = 'Contacting servers...';
 
-    const promises = PIPED_SERVERS.map(server =>
-        fetchWithTimeout(`${server}/streams/${videoId}`)
+    // Build all racing promises: Piped + Invidious
+    const pipedPromises = PIPED_SERVERS.map(server =>
+        fetchWithTimeout(`${server}/streams/${videoId}`, 6000)
             .then(r => r.json())
             .then(data => {
                 if (data.error) throw new Error(data.error);
-                if (!data.videoStreams && !data.audioStreams) throw new Error('No streams in response');
-                return data;
+                if (!data.videoStreams && !data.audioStreams) throw new Error('Empty response');
+                return data; // Already in Piped format
+            })
+    );
+
+    const invidiousPromises = INVIDIOUS_SERVERS.map(server =>
+        fetchWithTimeout(`${server}/videos/${videoId}?fields=title,lengthSeconds,videoThumbnails,adaptiveFormats,formatStreams`, 6000)
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) throw new Error(data.error);
+                if (!data.adaptiveFormats && !data.formatStreams) throw new Error('Empty response');
+                return normalizeInvidious(data, videoId);
             })
     );
 
     try {
-        const data = await Promise.any(promises);
+        const data = await Promise.any([...pipedPromises, ...invidiousPromises]);
+        statusEl.className = 'server-status ok';
+        statusEl.textContent = 'Done';
+        setTimeout(() => { statusEl.textContent = ''; }, 2000);
         processStreams(data, videoId);
     } catch(err) {
         console.error('All servers failed:', err);
+        statusEl.textContent = '';
+        const total = PIPED_SERVERS.length + INVIDIOUS_SERVERS.length;
         document.getElementById('errorDetail').textContent =
-            'All ' + PIPED_SERVERS.length + ' Piped servers failed to respond. The video may be private, region-restricted, or servers may be temporarily down.';
+            `All ${total} servers failed to respond. The video may be private, region-restricted, or temporarily unavailable.`;
         errorBox.classList.add('show');
-        showToast('Could not fetch — see error details below');
+        showToast('Could not fetch video. See details below.');
     } finally {
         btn.disabled = false;
         document.getElementById('btnText').textContent = 'Find Video';
@@ -903,11 +1099,12 @@ function getExt(format) {
     if (f.includes('webm')) return 'webm';
     if (f.includes('m4a')) return 'm4a';
     if (f.includes('mp3')) return 'mp3';
+    if (f.includes('opus')) return 'webm';
     return 'mp4';
 }
 
 function formatSize(bytes) {
-    if (!bytes || bytes === 0) return '—';
+    if (!bytes || bytes === 0) return '';
     const mb = bytes / (1024 * 1024);
     return mb < 1 ? `${(bytes/1024).toFixed(0)} KB` : `${mb.toFixed(1)} MB`;
 }
@@ -933,7 +1130,7 @@ function processStreams(data, videoId) {
     if (data.videoStreams && data.videoStreams.length > 0) {
         const seen = new Set();
         data.videoStreams.forEach(s => {
-            const key = s.quality + s.videoOnly;
+            const key = s.quality + (s.videoOnly ? '_v' : '_av');
             if (seen.has(key)) return;
             seen.add(key);
             videoStreams.push({
@@ -994,9 +1191,10 @@ function renderVideoFormats(streams) {
         const fps = s.fps ? `<span class="text-9 text-slate-600" style="margin-left:4px;">${s.fps}fps</span>` : '';
         const encodedUrl = encodeURIComponent(s.url);
         const filename = `DFASTER_${s.resolution}.${s.ext}`;
+        const sizeLabel = s.size ? s.size : '';
 
         return `
-        <div class="${cardClass}" onclick="openDlModal('${escStr(s.resolution)} (${s.ext.toUpperCase()})', '${escStr(s.size)} · ${s.videoOnly ? 'Video only — no audio' : 'Video + Audio'}', '${encodedUrl}', '${escStr(filename)}')">
+        <div class="${cardClass}" onclick="openDlModal('${escStr(s.resolution)} (${s.ext.toUpperCase()})', '${escStr(sizeLabel)} ${s.videoOnly ? 'Video only - no audio' : 'Video + Audio'}', '${encodedUrl}', '${escStr(filename)}')">
             <div class="flex items-center gap-3 flex-1 min-w-0">
                 <div style="width:36px;height:36px;background:rgba(16,185,129,0.08);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                     <i class="fa-solid fa-clapperboard" style="color:${s.videoOnly ? '#64748b' : '#10b981'};font-size:13px;"></i>
@@ -1011,7 +1209,7 @@ function renderVideoFormats(streams) {
             </div>
             <div class="flex items-center gap-2 flex-shrink-0">
                 ${badge}
-                <span class="text-xs text-slate-400 font-mono">${s.size}</span>
+                ${sizeLabel ? `<span class="text-xs text-slate-400 font-mono">${sizeLabel}</span>` : ''}
                 <i class="fa-solid fa-chevron-right" style="font-size:11px;color:#334155;"></i>
             </div>
         </div>`;
@@ -1028,20 +1226,21 @@ function renderAudioFormats(streams) {
         const label = i === 0 ? 'Best Quality' : `Standard ${i}`;
         const encodedUrl = encodeURIComponent(s.url);
         const filename = `DFASTER_Audio_${s.resolution}.${s.ext}`;
+        const sizeLabel = s.size ? s.size : '';
         return `
-        <div class="format-card audio-card" onclick="openDlModal('${escStr(label)} Audio (${s.resolution})', '${escStr(s.size)} · ${s.ext.toUpperCase()} Audio', '${encodedUrl}', '${escStr(filename)}')">
+        <div class="format-card audio-card" onclick="openDlModal('${escStr(label)} Audio (${s.resolution})', '${escStr(sizeLabel)} ${s.ext.toUpperCase()} Audio', '${encodedUrl}', '${escStr(filename)}')">
             <div class="flex items-center gap-3 flex-1 min-w-0">
                 <div style="width:36px;height:36px;background:rgba(99,102,241,0.1);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                     <i class="fa-solid fa-headphones" style="color:#818cf8;font-size:13px;"></i>
                 </div>
                 <div>
                     <div class="font-bold text-sm text-slate-200">${label}</div>
-                    <span class="text-10 text-slate-500">${s.resolution} · ${s.ext.toUpperCase()}</span>
+                    <span class="text-10 text-slate-500">${s.resolution} - ${s.ext.toUpperCase()}</span>
                 </div>
             </div>
             <div class="flex items-center gap-2 flex-shrink-0">
                 <span class="quality-badge badge-audio">AUDIO</span>
-                <span class="text-xs text-slate-400 font-mono">${s.size}</span>
+                ${sizeLabel ? `<span class="text-xs text-slate-400 font-mono">${sizeLabel}</span>` : ''}
                 <i class="fa-solid fa-chevron-right" style="font-size:11px;color:#334155;"></i>
             </div>
         </div>`;
@@ -1059,7 +1258,7 @@ function openDlModal(title, meta, encodedUrl, filename) {
     currentStreamUrl = decodeURIComponent(encodedUrl);
     currentFilename = filename;
     document.getElementById('dlModalTitle').textContent = title;
-    document.getElementById('dlModalMeta').textContent = meta;
+    document.getElementById('dlModalMeta').textContent = meta.trim();
     document.getElementById('dlModal').classList.remove('hide');
     const setting = localStorage.getItem('dfaster_quality') || 'ask';
     if (setting === 'direct') setTimeout(() => downloadDirect(), 200);
@@ -1083,7 +1282,7 @@ function downloadDirect() {
     document.body.removeChild(a);
     addToHistory(document.getElementById('dlModalTitle').textContent, currentStreamUrl, currentFilename);
     closeDlModal();
-    showToast('Download started / Link opened');
+    showToast('Download started');
 }
 
 function copyStreamLink() {
@@ -1181,7 +1380,7 @@ async function pasteLink() {
         document.getElementById('videoLink').value = text.trim();
         showToast('Link pasted');
     } catch(e) {
-        showToast('Paste manually — clipboard access blocked');
+        showToast('Paste manually - clipboard access blocked');
     }
 }
 
@@ -1189,6 +1388,7 @@ function clearLink() {
     document.getElementById('videoLink').value = '';
     document.getElementById('videoLink').focus();
     document.getElementById('errorBox').classList.remove('show');
+    document.getElementById('serverStatus').textContent = '';
 }
 
 let toastTimer = null;
